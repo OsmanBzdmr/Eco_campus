@@ -1,17 +1,17 @@
 {
-  "name": "backend",
+  "name": "ecocampus-backend",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "EcoCampus Marketplace - Backend API",
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node server.js",
+    "dev": "node --watch server.js"
   },
-  "keywords": [],
+  "keywords": ["ecocampus", "marketplace", "express", "postgresql"],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "type": "commonjs",
   "dependencies": {
-    "bcrypt": "^6.0.0",
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",

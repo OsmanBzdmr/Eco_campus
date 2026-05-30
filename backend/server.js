@@ -9,9 +9,8 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Rotaları Tanımla
 app.use('/api/products', productRoutes);
-app.use('/api/auth', authRoutes); // <--- EKSİK OLAN SATIR BUYDU, EKLE!
+app.use('/api/auth', authRoutes);
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Sunucu ${PORT} portunda modüler olarak çalışıyor.`));
+app.listen(PORT, () => console.log(`Sunucu ${PORT} portunda çalışıyor.`));
