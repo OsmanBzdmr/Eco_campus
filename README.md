@@ -5,7 +5,6 @@
 </p>
 
 **EcoCampus**, üniversite öğrencilerinin kampüs içinde eşya paylaşmasını, israfı azaltmasını ve öğrenci ekonomisini desteklemesini sağlayan modern bir full-stack pazaryeri platformudur.
-
 > React · Node.js · PostgreSQL · JWT · Tailwind CSS · React Native (Expo)
 
 ---
@@ -142,7 +141,7 @@ npx expo start
 
 ## ⚙️ Ortam Değişkenleri
 
-`backend/.env` dosyasını oluşturun:
+`backend/.env` dosyasını `.env.example` dosyasından oluşturun:
 
 ```env
 DB_USER=postgres
