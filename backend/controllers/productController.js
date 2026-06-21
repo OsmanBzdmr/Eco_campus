@@ -1,27 +1,21 @@
 const db = require('../config/db');
-const jwt = require('jsonwebtoken');
 
-exports.getProducts = (req, res) => {
+exports.getProducts = (req, res, next) => {
   try {
     const products = db.prepare('SELECT * FROM products ORDER BY id DESC').all();
     res.json(products);
   } catch (err) {
-    res.status(500).json(err.message);
+    next(err);
   }
 };
 
-exports.createProduct = (req, res) => {
+exports.createProduct = (req, res, next) => {
   try {
-    const token = req.headers.authorization;
-    if (!token) return res.status(401).json('Token gerekli');
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'gizlisifre');
-    const user_id = decoded.id;
-
+    const user_id = req.user_id;
     const { title, price, description, image_url, category_id } = req.body;
 
     if (!title || price === undefined || price === '') {
-      return res.status(400).json('Başlık ve fiyat zorunludur');
+      return res.status(400).json({ message: 'Başlık ve fiyat zorunludur' });
     }
 
     const stmt = db.prepare(
@@ -31,27 +25,22 @@ exports.createProduct = (req, res) => {
     const product = db.prepare('SELECT * FROM products WHERE id = ?').get(info.lastInsertRowid);
     res.json(product);
   } catch (err) {
-    res.status(500).json(err.message);
+    next(err);
   }
 };
 
-exports.deleteProduct = (req, res) => {
+exports.deleteProduct = (req, res, next) => {
   try {
-    const token = req.headers.authorization;
-    if (!token) return res.status(401).json('Token gerekli');
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'gizlisifre');
-    const user_id = decoded.id;
-
+    const user_id = req.user_id;
     const { id } = req.params;
 
     const product = db.prepare('SELECT * FROM products WHERE id = ?').get(id);
-    if (!product) return res.status(404).json('Ürün bulunamadı');
-    if (product.user_id !== user_id) return res.status(403).json('Bu ürünü silme yetkiniz yok');
+    if (!product) return res.status(404).json({ message: 'Ürün bulunamadı' });
+    if (product.user_id !== user_id) return res.status(403).json({ message: 'Bu ürünü silme yetkiniz yok' });
 
     db.prepare('DELETE FROM products WHERE id = ?').run(id);
     res.json({ message: 'Ürün silindi' });
   } catch (err) {
-    res.status(500).json(err.message);
+    next(err);
   }
 };
