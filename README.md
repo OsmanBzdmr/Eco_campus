@@ -14,7 +14,10 @@
 - 🗂️ **Kategori Sistemi** — İlanlar kategorilere ayrılır, web tarafında kategori seçimi ve listede kategori etiketi gösterilir
 - 💚 **Bağış Sistemi** — Fiyatı 0 TL olan ürünler otomatik olarak bağış olarak işaretlenir
 - 📊 **Dashboard Analitik** — Toplam ilan, satılık ürün ve bağış sayılarını anlık takip edin
-- 🗑️ **İlan Yönetimi** — Kendi ilanlarınızı oluşturun ve silin (yetkisiz silme istekleri backend tarafından reddedilir)
+- 🗑️ **İlan Yönetimi** — Kendi ilanlarınızı oluşturun, düzenleyin ve silin (yetkisiz işlemler backend tarafından reddedilir)
+- 🔍 **Arama, Filtreleme ve Sayfalama** — Başlık/açıklamada arama, kategoriye göre filtreleme; sayfalama opt-in'dir, eski istemcilerle geriye dönük uyumlu kalır
+- 🛡️ **Güvenlik Sertleştirmesi** — Helmet güvenlik header'ları, genel ve auth'a özel rate limiting (brute-force koruması), tüm girdiler için sunucu taraflı doğrulama, kısıtlı CORS
+- ✅ **Test Edilmiş Backend** — Jest + Supertest ile auth ve ürün uçları için otomatik testler, ESLint ile kod kalitesi kontrolü
 - 🎨 **Modern UI** — Tailwind CSS ile responsive tasarım, toast bildirimleri, loading animasyonları
 
 ---
@@ -25,7 +28,8 @@
 |---|---|
 | Backend | Node.js, Express.js |
 | Veritabanı | SQLite |
-| Güvenlik | JWT, Bcryptjs |
+| Güvenlik | JWT, Bcryptjs, Helmet, express-rate-limit, express-validator |
+| Test & Kalite | Jest, Supertest, ESLint |
 | Web Frontend | React 19, Tailwind CSS v3, Axios, Lucide React |
 | Mobil | React Native (Expo) |
 | Build Tool | Vite |
@@ -39,11 +43,17 @@ Eco_campus/
 ├── backend/
 │   ├── config/db.js          # SQLite bağlantısı
 │   ├── controllers/          # İş mantığı
+│   ├── db/schema.js          # Paylaşımlı şema + seed (setup-db.js ve testler kullanır)
 │   ├── middleware/
-│   │   └── authMiddleware.js # JWT doğrulama (merkezi)
+│   │   ├── authMiddleware.js       # JWT doğrulama (merkezi)
+│   │   ├── rateLimiter.js          # Genel + auth'a özel rate limiting
+│   │   └── validationMiddleware.js # express-validator ile girdi doğrulama
 │   ├── routes/                # API endpoint'leri
-│   ├── server.js              # Express sunucu + merkezi hata yönetimi
+│   ├── tests/                 # Jest + Supertest testleri (mock veritabanı ile)
+│   ├── server.js              # Express sunucu (helmet, CORS, rate limiter) + merkezi hata yönetimi
 │   ├── setup-db.js            # Otomatik veritabanı kurulumu
+│   ├── eslint.config.js        # ESLint yapılandırması
+│   ├── jest.config.js          # Jest yapılandırması
 │   ├── .env.example            # Ortam değişkeni şablonu
 │   └── package.json
 ├── web/
@@ -108,6 +118,12 @@ node server.js
 # http://localhost:5000
 ```
 
+> 🧪 **Testler (opsiyonel):** Backend için Jest + Supertest ile yazılmış otomatik testleri ve ESLint kontrolünü çalıştırabilirsiniz:
+> ```bash
+> npm test       # auth ve ürün uçları için testler
+> npm run lint   # ESLint kontrolü
+> ```
+
 ### 4. Web dashboard'u başlat
 
 ```bash
@@ -134,12 +150,15 @@ npx expo start
 
 | Metod | Endpoint | Açıklama | Auth |
 |---|---|---|---|
-| POST | `/api/auth/register` | Yeni kullanıcı kaydı | — |
-| POST | `/api/auth/login` | Giriş yap, JWT döner | — |
-| GET | `/api/products` | Tüm ilanları getir | — |
+| POST | `/api/auth/register` | Yeni kullanıcı kaydı (rate limit'li) | — |
+| POST | `/api/auth/login` | Giriş yap, JWT döner (rate limit'li) | — |
+| GET | `/api/products` | İlanları getir — `search`, `category_id`, `page`, `limit` query parametrelerini destekler | — |
 | POST | `/api/products` | Yeni ilan ekle | ✅ |
+| PUT | `/api/products/:id` | İlanı güncelle (sadece sahibi) | ✅ |
 | DELETE | `/api/products/:id` | İlan sil (sadece sahibi) | ✅ |
 | GET | `/api/categories` | Kategorileri getir | — |
+
+> `GET /api/products` geriye dönük uyumluluk için varsayılan olarak düz bir dizi döner; `page`/`limit` gönderildiğinde sayfalama devreye girer ve toplam kayıt/sayfa bilgisi `X-Total-Count`, `X-Page`, `X-Limit`, `X-Total-Pages` response header'larında döner.
 
 ---
 
@@ -151,9 +170,23 @@ npx expo start
 DB_PATH=./ecocampus.db
 JWT_SECRET=guclu_ve_rastgele_bir_deger
 PORT=5000
+NODE_ENV=development
+
+# CORS - izin verilen origin'ler (virgülle ayrılmış)
+CORS_ORIGIN=http://localhost:5173
+
+# Genel API rate limit (tüm uçlar için)
+RATE_LIMIT_WINDOW_MS=900000
+RATE_LIMIT_MAX=300
+
+# Auth uçları (login/register) için daha sıkı rate limit
+AUTH_RATE_LIMIT_WINDOW_MS=900000
+AUTH_RATE_LIMIT_MAX=10
 ```
 
 `JWT_SECRET` tanımlı değilse sunucu (`server.js`) başlangıçta hata verip kapanır — varsayılan/sabit bir secret ile asla çalışmaz. Rastgele bir değer üretmek için yukarıdaki kurulum adımındaki komutu kullanabilirsiniz.
+
+`CORS_ORIGIN`, sunucunun hangi origin'lerden gelen isteklere izin vereceğini belirler; web panelini farklı bir adreste/port'ta çalıştırıyorsanız bu değeri güncelleyin. Rate limit değerleri test ortamında (`NODE_ENV=test`) otomatik olarak devre dışı bırakılır.
 
 ---
 
