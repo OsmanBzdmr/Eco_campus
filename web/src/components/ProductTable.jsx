@@ -1,16 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { Trash2, AlertCircle } from 'lucide-react';
-import { fetchCategories } from '../services/api';
+import React from 'react';
+import { Trash2, Pencil, AlertCircle } from 'lucide-react';
 
-export default function ProductTable({ products, onDelete, loading }) {
-  const [categories, setCategories] = useState([]);
-
-  useEffect(() => {
-    fetchCategories()
-      .then((res) => setCategories(res.data))
-      .catch((err) => console.error('Kategori yükleme hatası:', err));
-  }, []);
-
+export default function ProductTable({ products, onDelete, onEdit, loading, categories = [] }) {
   const getCategoryName = (categoryId) => {
     const cat = categories.find((c) => c.id === categoryId);
     return cat ? cat.name : '—';
@@ -90,13 +81,22 @@ export default function ProductTable({ products, onDelete, loading }) {
                     )}
                   </td>
                   <td className="py-4 px-4">
-                    <button
-                      onClick={() => onDelete(product.id)}
-                      className="flex items-center gap-2 text-red-600 hover:text-red-800 hover:bg-red-50 px-3 py-2 rounded-lg transition font-medium"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                      Sil
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => onEdit(product)}
+                        className="flex items-center gap-2 text-eco-600 hover:text-eco-800 hover:bg-eco-50 px-3 py-2 rounded-lg transition font-medium"
+                      >
+                        <Pencil className="w-4 h-4" />
+                        Düzenle
+                      </button>
+                      <button
+                        onClick={() => onDelete(product.id)}
+                        className="flex items-center gap-2 text-red-600 hover:text-red-800 hover:bg-red-50 px-3 py-2 rounded-lg transition font-medium"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                        Sil
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -132,13 +132,22 @@ export default function ProductTable({ products, onDelete, loading }) {
                   )}
                 </div>
               </div>
-              <button
-                onClick={() => onDelete(product.id)}
-                className="w-full flex items-center justify-center gap-2 text-red-600 hover:text-red-800 hover:bg-red-50 px-3 py-2 rounded-lg transition font-medium"
-              >
-                <Trash2 className="w-4 h-4" />
-                Sil
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => onEdit(product)}
+                  className="flex-1 flex items-center justify-center gap-2 text-eco-600 hover:text-eco-800 hover:bg-eco-50 px-3 py-2 rounded-lg transition font-medium border border-eco-200"
+                >
+                  <Pencil className="w-4 h-4" />
+                  Düzenle
+                </button>
+                <button
+                  onClick={() => onDelete(product.id)}
+                  className="flex-1 flex items-center justify-center gap-2 text-red-600 hover:text-red-800 hover:bg-red-50 px-3 py-2 rounded-lg transition font-medium"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  Sil
+                </button>
+              </div>
             </div>
           ))}
         </div>

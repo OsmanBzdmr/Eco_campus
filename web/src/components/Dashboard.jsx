@@ -1,16 +1,79 @@
-import React, { useState } from 'react';
-import { LogOut, Package, Home, Leaf } from 'lucide-react';
-import { deleteProduct as deleteProductApi } from '../services/api';
+import React, { useState, useEffect, useCallback } from 'react';
+import { LogOut, Package, Home, Leaf, Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { fetchProducts as fetchProductsApi, deleteProduct as deleteProductApi, fetchCategories } from '../services/api';
 import ProductForm from './ProductForm';
 import ProductTable from './ProductTable';
 import StatsCard from './StatsCard';
 import Toast from './Toast';
 
-export default function Dashboard({ token, onLogout, products, loading, onProductAdded, fetchProducts }) {
+export default function Dashboard({ token, onLogout }) {
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [deleting, setDeleting] = useState(false);
   const [toast, setToast] = useState(null);
+  const [editingProduct, setEditingProduct] = useState(null);
+
+  // Search / filter / pagination
+  const [search, setSearch] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('');
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const [categories, setCategories] = useState([]);
+  const limit = 10;
+
+  useEffect(() => {
+    fetchCategories()
+      .then((res) => setCategories(res.data))
+      .catch((err) => console.error('Kategori yükleme hatası:', err));
+  }, []);
+
+  const loadProducts = useCallback(async () => {
+    setLoading(true);
+    try {
+      const params = { page, limit };
+      if (search) params.search = search;
+      if (categoryFilter) params.category_id = categoryFilter;
+      const res = await fetchProductsApi(params);
+      setProducts(res.data);
+      setTotalPages(parseInt(res.headers['x-total-pages'] || '1', 10));
+      setTotalCount(parseInt(res.headers['x-total-count'] || '0', 10));
+    } catch (err) {
+      console.error('Ürün yükleme hatası:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, [search, categoryFilter, page, limit]);
+
+  useEffect(() => {
+    loadProducts();
+  }, [loadProducts]);
+
+  const handleSearch = (e) => {
+    setSearch(e.target.value);
+    setPage(1);
+  };
+
+  const handleCategoryFilter = (e) => {
+    setCategoryFilter(e.target.value);
+    setPage(1);
+  };
+
+  const handleEdit = (product) => {
+    setEditingProduct(product);
+    setActiveTab('dashboard');
+  };
+
+  const handleCancelEdit = () => {
+    setEditingProduct(null);
+  };
+
+  const handleProductSaved = () => {
+    setEditingProduct(null);
+    loadProducts();
+  };
 
   const handleDelete = async (id) => {
     setDeleting(true);
@@ -18,7 +81,7 @@ export default function Dashboard({ token, onLogout, products, loading, onProduc
       await deleteProductApi(id, token);
       setToast({ type: 'success', message: 'İlan başarıyla silindi' });
       setConfirmDelete(null);
-      fetchProducts();
+      loadProducts();
     } catch (error) {
       setToast({ type: 'error', message: 'Silme işleminde hata oluştu' });
       console.error(error);
@@ -33,7 +96,7 @@ export default function Dashboard({ token, onLogout, products, loading, onProduc
 
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex flex-col md:flex-row">
         {/* Sidebar */}
-        <aside className="w-full md:w-64 bg-gradient-to-b from-gray-900 to-gray-800 text-white p-6 md:min-h-screen">
+        <aside className="w-full md:w-64 bg-gradient-to-b from-gray-900 to-gray-800 text-white p-6 md:min-h-screen flex flex-col">
           <div className="flex items-center gap-3 mb-8">
             <div className="bg-eco-500 p-2 rounded-lg">
               <Leaf className="w-6 h-6" />
@@ -46,7 +109,7 @@ export default function Dashboard({ token, onLogout, products, loading, onProduc
 
           <nav className="space-y-2 mb-8">
             <button
-              onClick={() => setActiveTab('dashboard')}
+              onClick={() => { setActiveTab('dashboard'); setEditingProduct(null); }}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition ${
                 activeTab === 'dashboard'
                   ? 'bg-eco-600 text-white'
@@ -66,9 +129,11 @@ export default function Dashboard({ token, onLogout, products, loading, onProduc
             >
               <Package className="w-5 h-5" />
               İlanlarım
-              <span className="ml-auto bg-eco-600 px-2 py-1 rounded text-xs font-semibold">
-                {products.length}
-              </span>
+              {totalCount > 0 && (
+                <span className="ml-auto bg-eco-600 px-2 py-1 rounded text-xs font-semibold">
+                  {totalCount}
+                </span>
+              )}
             </button>
           </nav>
 
@@ -106,7 +171,7 @@ export default function Dashboard({ token, onLogout, products, loading, onProduc
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <StatsCard
                     title="Toplam İlan"
-                    value={products.length}
+                    value={totalCount}
                     icon="📦"
                     color="bg-blue-100 text-blue-600"
                   />
@@ -124,18 +189,91 @@ export default function Dashboard({ token, onLogout, products, loading, onProduc
                   />
                 </div>
 
-                {/* Add Product Form */}
-                <ProductForm token={token} onProductAdded={onProductAdded} />
+                {/* Product Form (Add / Edit) */}
+                <ProductForm
+                  token={token}
+                  editingProduct={editingProduct}
+                  onProductAdded={handleProductSaved}
+                  onCancelEdit={handleCancelEdit}
+                />
               </div>
             )}
 
             {/* Products Tab */}
             {activeTab === 'products' && (
-              <ProductTable
-                products={products}
-                onDelete={(id) => setConfirmDelete(id)}
-                loading={loading}
-              />
+              <div className="space-y-6">
+                {/* Search & Filter Bar */}
+                <div className="bg-white rounded-2xl shadow-lg p-4 md:p-6">
+                  <div className="flex flex-col md:flex-row gap-4">
+                    <div className="flex-1 relative">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                      <input
+                        type="text"
+                        value={search}
+                        onChange={handleSearch}
+                        placeholder="İlanlarda ara..."
+                        className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-eco-500 focus:border-transparent outline-none transition"
+                      />
+                    </div>
+                    <div className="md:w-56">
+                      <select
+                        value={categoryFilter}
+                        onChange={handleCategoryFilter}
+                        className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-eco-500 focus:border-transparent outline-none transition bg-white"
+                      >
+                        <option value="">Tüm Kategoriler</option>
+                        {categories.map((cat) => (
+                          <option key={cat.id} value={cat.id}>{cat.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Product Table */}
+                <ProductTable
+                  products={products}
+                  onDelete={(id) => setConfirmDelete(id)}
+                  onEdit={handleEdit}
+                  loading={loading}
+                  categories={categories}
+                />
+
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <div className="flex items-center justify-center gap-2">
+                    <button
+                      onClick={() => setPage((p) => Math.max(1, p - 1))}
+                      disabled={page <= 1}
+                      className="flex items-center gap-1 px-3 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                      Önceki
+                    </button>
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+                      <button
+                        key={p}
+                        onClick={() => setPage(p)}
+                        className={`w-10 h-10 rounded-lg font-semibold transition ${
+                          p === page
+                            ? 'bg-eco-500 text-white'
+                            : 'border border-gray-300 text-gray-700 hover:bg-gray-50'
+                        }`}
+                      >
+                        {p}
+                      </button>
+                    ))}
+                    <button
+                      onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                      disabled={page >= totalPages}
+                      className="flex items-center gap-1 px-3 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                    >
+                      Sonraki
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
+              </div>
             )}
           </div>
         </main>

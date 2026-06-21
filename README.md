@@ -13,8 +13,9 @@
 - 🗂️ **Kategori Sistemi** — İlanlar kategorilere ayrılır, web tarafında kategori seçimi ve listede kategori etiketi gösterilir
 - 💚 **Bağış Sistemi** — Fiyatı 0 TL olan ürünler otomatik olarak bağış olarak işaretlenir
 - 📊 **Dashboard Analitik** — Toplam ilan, satılık ürün ve bağış sayılarını anlık takip edin
+- ✏️ **İlan Düzenleme** — Web üzerinden mevcut ilanlarınızı düzenleyin, form otomatik doldurulur
 - 🗑️ **İlan Yönetimi** — Kendi ilanlarınızı oluşturun, düzenleyin ve silin (yetkisiz işlemler backend tarafından reddedilir)
-- 🔍 **Arama, Filtreleme ve Sayfalama** — Başlık/açıklamada arama, kategoriye göre filtreleme; sayfalama opt-in'dir, eski istemcilerle geriye dönük uyumlu kalır
+- 🔍 **Arama, Filtreleme ve Sayfalama** — Web'de arama kutusu + kategori dropdown'ı, 10 ürün/sayfa sayfalama kontrolleri (Önceki/Sonraki ve sayfa numaraları), backend'de sortalama, eski istemcilerle geriye dönük uyumlu
 - 📱 **Tam Mobil Destek** — Expo ile giriş, kayıt, ilan ekleme/silme, pull-to-refresh, auth guard ve güvenli token yönetimi (expo-secure-store)
 - 🛡️ **Güvenlik Sertleştirmesi** — Helmet güvenlik header'ları, genel ve auth'a özel rate limiting (brute-force koruması), tüm girdiler için sunucu taraflı doğrulama, kısıtlı CORS
 - ✅ **Test Edilmiş Backend** — Jest + Supertest ile auth ve ürün uçları için otomatik testler, ESLint ile kod kalitesi kontrolü
@@ -59,13 +60,14 @@ Eco_campus/
 ├── web/
 │   ├── src/
 │   │   ├── components/
-│   │   │   ├── LoginPage.jsx
-│   │   │   ├── RegisterPage.jsx
-│   │   │   ├── Dashboard.jsx
-│   │   │   ├── ProductForm.jsx
-│   │   │   └── ProductTable.jsx
-│   │   ├── services/api.js   # Axios API katmanı
-│   │   └── App.jsx
+│   │   │   ├── LoginPage.jsx      # Giriş formu (auth guard)
+│   │   │   ├── RegisterPage.jsx   # Kayıt formu (validasyonlu)
+│   │   │   ├── Dashboard.jsx      # Ana panel — sidebar, arama/filtre/sayfalama, düzenleme state'i
+│   │   │   ├── ProductForm.jsx    # İlan ekleme/düzenleme formu (editingProduct prop'u ile iki mod)
+│   │   │   ├── ProductTable.jsx   # Tablo/kart görünümü, düzenleme/silme butonları
+│   │   │   ├── StatsCard.jsx      # İstatistik kartları
+│   │   │   └── Toast.jsx          # Bildirim bileşeni (başarı/hata)
+│   │   ├── services/api.js   # Axios API katmanı (7 endpoint: CRUD + auth + kategori)
 │   └── package.json
 ├── mobile/
 │   ├── app/
@@ -172,7 +174,9 @@ npx expo start
 | DELETE | `/api/products/:id` | İlan sil (sadece sahibi) | ✅ |
 | GET | `/api/categories` | Kategorileri getir | — |
 
-> `GET /api/products` geriye dönük uyumluluk için varsayılan olarak düz bir dizi döner; `page`/`limit` gönderildiğinde sayfalama devreye girer ve toplam kayıt/sayfa bilgisi `X-Total-Count`, `X-Page`, `X-Limit`, `X-Total-Pages` response header'larında döner.
+> `GET /api/products` geriye dönük uyumluluk için varsayılan olarak düz bir dizi döner; `page`/`limit` gönderildiğinde sayfalama devreye girer ve toplam kayıt/sayfa bilgisi `X-Total-Count`, `X-Page`, `X-Limit`, `X-Total-Pages` response header'larında döner. Ek parametreler: `?search=kelime` (başlık/açıklamada arama), `?category_id=N` (kategori filtresi), `?sort=title&order=asc` (sıralama).
+
+> `PUT /api/products/:id` isteği sadece ilan sahibi tarafından yapılabilir (403 yetkisiz). Sadece gönderilen alanlar güncellenir — kısmi güncelleme desteklenir. Hiçbir alan gönderilmezse 400 döner.
 
 ---
 
@@ -182,12 +186,12 @@ npx expo start
 
 ```env
 DB_PATH=./ecocampus.db
-JWT_SECRET=guclu_ve_rastgele_bir_deger
+JWT_SECRET=55540caecb45b5baa316ab569f80a6127d4adc55abae2afacfd927f91f086b36
 PORT=5000
 NODE_ENV=development
 
 # CORS - izin verilen origin'ler (virgülle ayrılmış, boşluksuz)
-CORS_ORIGIN=http://localhost:5173,http://127.0.0.1:5173
+CORS_ORIGIN=http://localhost:5173,http://127.0.0.1:5173,http://localhost:5174,http://127.0.0.1:5174
 
 # Genel API rate limit (tüm uçlar için, 15dk'da 300 istek)
 RATE_LIMIT_WINDOW_MS=900000
@@ -198,11 +202,11 @@ AUTH_RATE_LIMIT_WINDOW_MS=900000
 AUTH_RATE_LIMIT_MAX=10
 ```
 
-`JWT_SECRET` tanımlı değilse sunucu başlangıçta hata verip kapanır — varsayılan/sabit bir secret ile asla çalışmaz. Rastgele bir değer üretmek için kurulum adımındaki komutu kullanın.
+`JWT_SECRET` tanımlı değilse sunucu başlangıçta hata verip kapanır — varsayılan/sabit bir secret ile asla çalışmaz. Rastgele bir değer üretmek için kurulum adımındaki komutu kullanın. Projeye eklenen `.env` dosyası önceden oluşturulmuş güçlü bir rastgele değer içerir, production'da mutlaka kendiniz yenileyin.
 
 `CORS_ORIGIN` virgülle ayrılmış birden fazla origin alır; Vite `--host` ile başlatıldığında `127.0.0.1` üzerinden de erişilebildiği için her ikisini de eklemeniz önerilir. Rate limit değerleri test ortamında (`NODE_ENV=test`) otomatik devre dışı kalır.
 
-> **Web için:** `web/.env` dosyasında `VITE_API_URL=http://localhost:5000` tanımlıdır. Backend farklı bir portta çalışıyorsa bu değeri güncelleyin.
+> **Web için:** `web/.env` dosyasında `VITE_API_URL=http://localhost:5000` tanımlıdır. Backend farklı bir portta çalışıyorsa bu değeri güncelleyin. Vite 5173 doluysa otomatik 5174'e geçer.
 
 ---
 

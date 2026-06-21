@@ -2,8 +2,11 @@ import axios from 'axios';
 
 const API = axios.create({ baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000' });
 
-export const fetchProducts = () => API.get('/api/products');
+export const fetchProducts = (params = {}) => API.get('/api/products', { params });
 export const addProduct = (data, token) => API.post('/api/products', data, {
+  headers: { Authorization: token }
+});
+export const updateProduct = (id, data, token) => API.put(`/api/products/${id}`, data, {
   headers: { Authorization: token }
 });
 export const deleteProduct = (id, token) => API.delete(`/api/products/${id}`, {
