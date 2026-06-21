@@ -1,6 +1,5 @@
 # 🌿 EcoCampus — Sürdürülebilir Kampüs Pazaryeri
 
-
 **EcoCampus**, üniversite öğrencilerinin kampüs içinde eşya paylaşmasını, israfı azaltmasını ve öğrenci ekonomisini desteklemesini sağlayan modern bir full-stack pazaryeri platformudur.
 > React · Node.js · SQLite · JWT · Tailwind CSS · React Native (Expo)
 
@@ -172,21 +171,23 @@ JWT_SECRET=guclu_ve_rastgele_bir_deger
 PORT=5000
 NODE_ENV=development
 
-# CORS - izin verilen origin'ler (virgülle ayrılmış)
-CORS_ORIGIN=http://localhost:5173
+# CORS - izin verilen origin'ler (virgülle ayrılmış, boşluksuz)
+CORS_ORIGIN=http://localhost:5173,http://127.0.0.1:5173
 
-# Genel API rate limit (tüm uçlar için)
+# Genel API rate limit (tüm uçlar için, 15dk'da 300 istek)
 RATE_LIMIT_WINDOW_MS=900000
 RATE_LIMIT_MAX=300
 
-# Auth uçları (login/register) için daha sıkı rate limit
+# Auth uçları (login/register) için daha sıkı rate limit (15dk'da 10 deneme)
 AUTH_RATE_LIMIT_WINDOW_MS=900000
 AUTH_RATE_LIMIT_MAX=10
 ```
 
-`JWT_SECRET` tanımlı değilse sunucu (`server.js`) başlangıçta hata verip kapanır — varsayılan/sabit bir secret ile asla çalışmaz. Rastgele bir değer üretmek için yukarıdaki kurulum adımındaki komutu kullanabilirsiniz.
+`JWT_SECRET` tanımlı değilse sunucu başlangıçta hata verip kapanır — varsayılan/sabit bir secret ile asla çalışmaz. Rastgele bir değer üretmek için kurulum adımındaki komutu kullanın.
 
-`CORS_ORIGIN`, sunucunun hangi origin'lerden gelen isteklere izin vereceğini belirler; web panelini farklı bir adreste/port'ta çalıştırıyorsanız bu değeri güncelleyin. Rate limit değerleri test ortamında (`NODE_ENV=test`) otomatik olarak devre dışı bırakılır.
+`CORS_ORIGIN` virgülle ayrılmış birden fazla origin alır; Vite `--host` ile başlatıldığında `127.0.0.1` üzerinden de erişilebildiği için her ikisini de eklemeniz önerilir. Rate limit değerleri test ortamında (`NODE_ENV=test`) otomatik devre dışı kalır.
+
+> **Web için:** `web/.env` dosyasında `VITE_API_URL=http://localhost:5000` tanımlıdır. Backend farklı bir portta çalışıyorsa bu değeri güncelleyin.
 
 ---
 
