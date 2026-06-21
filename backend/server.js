@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet');
 require('dotenv').config();
 
 if (!process.env.JWT_SECRET) {
@@ -10,10 +11,35 @@ if (!process.env.JWT_SECRET) {
 const productRoutes = require('./routes/productRoutes');
 const authRoutes = require('./routes/authRoutes');
 const categoryRoutes = require('./routes/categoryRoutes');
+const { generalLimiter } = require('./middleware/rateLimiter');
 
 const app = express();
-app.use(cors());
+
+// Güvenlik header'ları (X-Frame-Options, X-Content-Type-Options, CSP vb.)
+app.use(helmet());
+
+// CORS yalnızca bilinen istemcilere (web paneli, mobil dev sunucusu) açılır.
+// CORS_ORIGIN ortam değişkeni virgülle ayrılmış birden fazla origin alabilir.
+const allowedOrigins = (process.env.CORS_ORIGIN || 'http://localhost:5173')
+  .split(',')
+  .map((o) => o.trim())
+  .filter(Boolean);
+
+app.use(cors({
+  origin(origin, callback) {
+    // origin olmadan gelen istekler (Postman, mobil uygulama, curl) kabul edilir
+    if (!origin || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    return callback(new Error('CORS politikası tarafından engellendi'));
+  },
+}));
+
 app.use(express.json());
+
+// Tüm API için genel rate limiter; auth uçları kendi içinde daha sıkı bir
+// limit olan authLimiter'ı ayrıca kullanır (bkz. authRoutes.js).
+app.use(generalLimiter);
 
 app.use('/api/products', productRoutes);
 app.use('/api/auth', authRoutes);
@@ -25,7 +51,7 @@ app.use((req, res) => {
 });
 
 // Merkezi hata yönetimi middleware'i (her zaman son middleware olmalı)
-app.use((err, req, res, next) => {
+app.use((err, req, res, _next) => {
   console.error('Hata yakalandı:', err);
 
   const isDev = process.env.NODE_ENV !== 'production';
@@ -35,4 +61,13 @@ app.use((err, req, res, next) => {
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Sunucu ${PORT} portunda çalışıyor.`));
+
+// app.listen yalnızca bu dosya doğrudan çalıştırıldığında tetiklenir
+// (`node server.js`). Testlerde `require('./server')` ile app import
+// edilirken gerçek bir port dinlenmesini önler; supertest app'i
+// doğrudan kullanır.
+if (require.main === module) {
+  app.listen(PORT, () => console.log(`Sunucu ${PORT} portunda çalışıyor.`));
+}
+
+module.exports = app;

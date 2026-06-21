@@ -1,0 +1,222 @@
+/**
+ * better-sqlite3'ün API yüzeyini (exec/prepare/get/all/run/pragma) taklit
+ * eden, hafızada (in-memory) çalışan basit bir SQL yorumlayıcısı.
+ *
+ * Sandbox ortamında better-sqlite3 native modülü derlenemediği için
+ * (node-gyp, nodejs.org header dosyalarına erişemiyor) testler gerçek
+ * SQLite yerine bunu kullanır. Uygulama kodu hiç değişmez: `config/db`
+ * modülü test ortamında bu mock ile değiştirilir (bkz. jest.config.js
+ * moduleNameMapper).
+ *
+ * Kapsam: backend/controllers ve backend/db/schema.js içinde kullanılan
+ * SQL deyimleriyle sınırlıdır (genel amaçlı bir SQL motoru DEĞİLDİR).
+ */
+
+function createMockDb() {
+  let tables = {};
+  let autoIncrement = {};
+
+  function ensureTable(name) {
+    if (!tables[name]) {
+      tables[name] = [];
+      autoIncrement[name] = 1;
+    }
+    return tables[name];
+  }
+
+  function cloneRow(row) {
+    return row ? { ...row } : row;
+  }
+
+  // ---- WHERE değerlendirme ----
+  // Desteklenen örüntüler: "field = ?", "field LIKE ?",
+  // "(field LIKE ? OR field2 LIKE ?)" ve bunların " AND " ile birleşimi.
+  function evaluateWhere(whereSql, params) {
+    if (!whereSql) return () => true;
+
+    const topLevelConditions = whereSql.split(/\s+AND\s+/i);
+    let paramIndex = 0;
+    const checks = [];
+
+    for (const rawCond of topLevelConditions) {
+      const cond = rawCond.trim();
+
+      const orMatch = cond.match(/^\((.+)\)$/);
+      if (orMatch) {
+        const orParts = orMatch[1].split(/\s+OR\s+/i);
+        const orChecks = orParts.map((part) => buildSingleCheck(part.trim(), paramIndex++));
+        checks.push((row) => orChecks.some((fn) => fn(row)));
+        continue;
+      }
+
+      checks.push(buildSingleCheck(cond, paramIndex++));
+    }
+
+    function buildSingleCheck(part, idx) {
+      const likeMatch = part.match(/^(\w+)\s+LIKE\s+\?$/i);
+      if (likeMatch) {
+        const field = likeMatch[1];
+        const value = String(params[idx] ?? '').replace(/%/g, '').toLowerCase();
+        return (row) => String(row[field] ?? '').toLowerCase().includes(value);
+      }
+      const eqMatch = part.match(/^(\w+)\s*=\s*\?$/);
+      if (eqMatch) {
+        const field = eqMatch[1];
+        return (row) => row[field] == params[idx];
+      }
+      throw new Error(`mockDb: desteklenmeyen WHERE koşulu: "${part}"`);
+    }
+
+    return (row) => checks.every((fn) => fn(row));
+  }
+
+  function countWhereParams(whereSql) {
+    if (!whereSql) return 0;
+    return (whereSql.match(/\?/g) || []).length;
+  }
+
+  function parseSelect(sql) {
+    const m = sql.match(
+      /^SELECT (.+?) FROM (\w+)(?: WHERE (.+?))?(?: ORDER BY (.+?))?(?: (LIMIT \? OFFSET \?))?$/i
+    );
+    if (!m) throw new Error(`mockDb: ayrıştırılamayan SELECT: "${sql}"`);
+    const [, colsRaw, table, whereSql, orderBy, limitClause] = m;
+    return { colsRaw: colsRaw.trim(), table, whereSql, orderBy, hasLimit: !!limitClause };
+  }
+
+  function project(row, colsRaw) {
+    if (colsRaw === '*') return cloneRow(row);
+    if (/^COUNT\(\*\)\s+as\s+cnt$/i.test(colsRaw)) return undefined; // ayrı ele alınır
+    const cols = colsRaw.split(',').map((c) => c.trim());
+    const out = {};
+    cols.forEach((c) => {
+      out[c] = row[c];
+    });
+    return out;
+  }
+
+  function statement(sql) {
+    const trimmed = sql.trim().replace(/\s+/g, ' ');
+
+    return {
+      get(...params) {
+        return this.all(...params)[0];
+      },
+      all(...params) {
+        // COUNT(*) sorguları
+        const countMatch = trimmed.match(
+          /^SELECT COUNT\(\*\) as cnt FROM (\w+)(?: WHERE (.+))?$/i
+        );
+        if (countMatch) {
+          const [, table, whereSql] = countMatch;
+          const rows = ensureTable(table);
+          const matcher = evaluateWhere(whereSql, params);
+          const cnt = rows.filter(matcher).length;
+          return [{ cnt }];
+        }
+
+        if (/^SELECT /i.test(trimmed)) {
+          const { colsRaw, table, whereSql, orderBy, hasLimit } = parseSelect(trimmed);
+          const rows = ensureTable(table);
+          const whereParamCount = countWhereParams(whereSql);
+          const whereParams = params.slice(0, whereParamCount);
+          const matcher = evaluateWhere(whereSql, whereParams);
+
+          let result = rows.filter(matcher).map(cloneRow);
+
+          if (orderBy) {
+            const [field, dir] = orderBy.trim().split(/\s+/);
+            const sign = /desc/i.test(dir || '') ? -1 : 1;
+            result.sort((a, b) => (a[field] > b[field] ? sign : a[field] < b[field] ? -sign : 0));
+          }
+
+          if (hasLimit) {
+            const limit = Number(params[whereParamCount]);
+            const offset = Number(params[whereParamCount + 1]);
+            result = result.slice(offset, offset + limit);
+          }
+
+          return result.map((row) => project(row, colsRaw));
+        }
+
+        throw new Error(`mockDb: desteklenmeyen sorgu (all/get): "${trimmed}"`);
+      },
+      run(...params) {
+        const insertMatch = trimmed.match(/^INSERT INTO (\w+) \(([^)]+)\) VALUES \(([^)]+)\)$/i);
+        if (insertMatch) {
+          const [, table, colsRaw] = insertMatch;
+          const cols = colsRaw.split(',').map((c) => c.trim());
+          const rows = ensureTable(table);
+          const id = autoIncrement[table]++;
+          const row = { id };
+          cols.forEach((c, i) => {
+            row[c] = params[i];
+          });
+          rows.push(row);
+          return { lastInsertRowid: id, changes: 1 };
+        }
+
+        const updateMatch = trimmed.match(/^UPDATE (\w+) SET (.+) WHERE id = \?$/i);
+        if (updateMatch) {
+          const [, table, setRaw] = updateMatch;
+          const cols = setRaw.split(',').map((c) => c.trim().match(/^(\w+)\s*=\s*\?$/)[1]);
+          const rows = ensureTable(table);
+          const id = params[params.length - 1];
+          const values = params.slice(0, params.length - 1);
+          const row = rows.find((r) => r.id == id);
+          if (row) {
+            cols.forEach((c, i) => {
+              row[c] = values[i];
+            });
+            return { changes: 1 };
+          }
+          return { changes: 0 };
+        }
+
+        const deleteMatch = trimmed.match(/^DELETE FROM (\w+) WHERE id = \?$/i);
+        if (deleteMatch) {
+          const [, table] = deleteMatch;
+          const rows = ensureTable(table);
+          const id = params[0];
+          const idx = rows.findIndex((r) => r.id == id);
+          if (idx !== -1) {
+            rows.splice(idx, 1);
+            return { changes: 1 };
+          }
+          return { changes: 0 };
+        }
+
+        throw new Error(`mockDb: desteklenmeyen sorgu (run): "${trimmed}"`);
+      },
+    };
+  }
+
+  return {
+    exec(sql) {
+      // CREATE TABLE IF NOT EXISTS <name> (...) deyimlerini ayrıştırıp
+      // ilgili tabloyu (boş bir dizi olarak) kaydeder; gerçek sütun
+      // tipleri/kısıtları mock için önemli değildir.
+      const statements = sql.split(';');
+      statements.forEach((s) => {
+        const m = s.match(/CREATE TABLE IF NOT EXISTS (\w+)/i);
+        if (m) ensureTable(m[1]);
+      });
+    },
+    pragma() {
+      // no-op
+    },
+    prepare(sql) {
+      return statement(sql);
+    },
+    close() {
+      // no-op
+    },
+    /** Test yardımcı fonksiyonu: tüm tabloları sıfırlar (gerçek better-sqlite3 API'sinde yoktur). */
+    __reset() {
+      tables = {};
+      autoIncrement = {};
+    },
+  };
+}
+
+module.exports = { createMockDb };

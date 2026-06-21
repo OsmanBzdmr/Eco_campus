@@ -6,13 +6,10 @@ exports.register = async (req, res, next) => {
   try {
     const { username, email, password } = req.body;
 
-    if (!username || !email || !password) {
-      return res.status(400).json({ message: 'Kullanıcı adı, e-posta ve şifre zorunludur' });
-    }
-    if (password.length < 6) {
-      return res.status(400).json({ message: 'Şifre en az 6 karakter olmalıdır' });
-    }
-
+    // Temel alan/format kontrolleri (zorunluluk, e-posta formatı, şifre
+    // uzunluğu vb.) artık registerValidation middleware'inde yapılıyor.
+    // Burada yalnızca veritabanına özgü iş kuralı (e-posta benzersizliği)
+    // kontrol edilir.
     const existing = db.prepare('SELECT id FROM users WHERE email = ?').get(email);
     if (existing) {
       return res.status(409).json({ message: 'Bu e-posta ile zaten bir hesap var' });
@@ -32,10 +29,7 @@ exports.login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
-    if (!email || !password) {
-      return res.status(400).json({ message: 'E-posta ve şifre zorunludur' });
-    }
-
+    // Alan zorunluluğu/format kontrolü loginValidation middleware'inde yapılır.
     const user = db.prepare('SELECT * FROM users WHERE email = ?').get(email);
     const validPassword = user ? await bcrypt.compare(password, user.password) : false;
 
