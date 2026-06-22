@@ -186,7 +186,7 @@ npx expo start
 
 ```env
 DB_PATH=./ecocampus.db
-JWT_SECRET=55540caecb45b5baa316ab569f80a6127d4adc55abae2afacfd927f91f086b36
+JWT_SECRET=guclu_ve_rastgele_bir_deger_buraya
 PORT=5000
 NODE_ENV=development
 
