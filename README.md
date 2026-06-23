@@ -13,10 +13,10 @@
 - 🗂️ **Kategori Sistemi** — İlanlar kategorilere ayrılır, web tarafında kategori seçimi ve listede kategori etiketi gösterilir
 - 💚 **Bağış Sistemi** — Fiyatı 0 TL olan ürünler otomatik olarak bağış olarak işaretlenir
 - 📊 **Dashboard Analitik** — Toplam ilan, satılık ürün ve bağış sayılarını anlık takip edin
-- ✏️ **İlan Düzenleme** — Web üzerinden mevcut ilanlarınızı düzenleyin, form otomatik doldurulur
+- ✏️ **İlan Düzenleme** — Web ve mobil üzerinden mevcut ilanlarınızı düzenleyin, form otomatik doldurulur
 - 🗑️ **İlan Yönetimi** — Kendi ilanlarınızı oluşturun, düzenleyin ve silin (yetkisiz işlemler backend tarafından reddedilir)
 - 🔍 **Arama, Filtreleme ve Sayfalama** — Web'de arama kutusu + kategori dropdown'ı, 10 ürün/sayfa sayfalama kontrolleri (Önceki/Sonraki ve sayfa numaraları), backend'de sortalama, eski istemcilerle geriye dönük uyumlu
-- 📱 **Tam Mobil Destek** — Expo ile giriş, kayıt, ilan ekleme/silme, pull-to-refresh, auth guard ve güvenli token yönetimi (expo-secure-store)
+- 📱 **Tam Mobil Destek** — Expo ile giriş, kayıt, ilan ekleme/düzenleme/silme, pull-to-refresh, auth guard ve güvenli token yönetimi (expo-secure-store)
 - 🛡️ **Güvenlik Sertleştirmesi** — Helmet güvenlik header'ları, genel ve auth'a özel rate limiting (brute-force koruması), tüm girdiler için sunucu taraflı doğrulama, kısıtlı CORS
 - ✅ **Test Edilmiş Backend** — Jest + Supertest ile auth ve ürün uçları için otomatik testler, ESLint ile kod kalitesi kontrolü
 - 🎨 **Modern UI** — Tailwind CSS ile responsive tasarım, toast bildirimleri, loading animasyonları
@@ -74,14 +74,15 @@ Eco_campus/
 │   │   ├── _layout.tsx        # Auth guard + Stack navigator
 │   │   ├── login.tsx          # Giriş ekranı
 │   │   ├── register.tsx       # Kayıt ekranı
+│   │   ├── edit-product.tsx   # İlan düzenleme formu (useLocalSearchParams ile veri alır)
 │   │   ├── modal.tsx
 │   │   └── (tabs)/
 │   │       ├── _layout.tsx    # Tab navigator (İlanlar, İlan Ekle, Hakkında)
-│   │       ├── index.tsx      # İlan listesi (silme, pull-to-refresh)
+│   │       ├── index.tsx      # İlan listesi (silme, düzenleme, pull-to-refresh)
 │   │       ├── add-product.tsx# İlan ekleme formu
 │   │       └── explore.tsx    # Hakkında + çıkış butonu
 │   ├── services/
-│   │   ├── api.ts             # Axios API katmanı (6 endpoint)
+│   │   ├── api.ts             # Axios API katmanı (7 endpoint: CRUD + auth + kategori)
 │   │   └── auth.ts            # Token saklama (expo-secure-store)
 │   ├── constants/theme.ts     # Web ile uyumlu eco renk paleti
 └── README.md

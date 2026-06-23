@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { StyleSheet, Text, View, FlatList, Image, SafeAreaView, Platform, StatusBar, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
+import { router } from 'expo-router';
 import { fetchProducts, deleteProduct, Product } from '@/services/api';
 import { getToken, getUserIdFromToken } from '@/services/auth';
 
@@ -68,9 +69,17 @@ export default function App() {
           <View style={styles.titleRow}>
             <Text style={styles.title}>{item.title}</Text>
             {isOwner && (
-              <TouchableOpacity onPress={() => handleDelete(item)} style={styles.deleteBtn}>
-                <Text style={styles.deleteBtnText}>Sil</Text>
-              </TouchableOpacity>
+              <View style={styles.ownerActions}>
+                <TouchableOpacity
+                  onPress={() => router.push({ pathname: '/edit-product' as any, params: { product: JSON.stringify(item) } })}
+                  style={styles.editBtn}
+                >
+                  <Text style={styles.editBtnText}>Düzenle</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => handleDelete(item)} style={styles.deleteBtn}>
+                  <Text style={styles.deleteBtnText}>Sil</Text>
+                </TouchableOpacity>
+              </View>
             )}
           </View>
           <Text style={styles.price}>
@@ -183,12 +192,27 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     flex: 1,
   },
+  ownerActions: {
+    flexDirection: 'row',
+    gap: 6,
+    marginLeft: 8,
+  },
+  editBtn: {
+    backgroundColor: '#fef3c7',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  editBtnText: {
+    color: '#d97706',
+    fontSize: 13,
+    fontWeight: '600',
+  },
   deleteBtn: {
     backgroundColor: '#fef2f2',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 8,
-    marginLeft: 8,
   },
   deleteBtnText: {
     color: '#dc2626',

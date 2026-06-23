@@ -2,9 +2,10 @@ import axios from 'axios';
 import Constants from 'expo-constants';
 
 const getBaseUrl = () => {
-  const debuggerHost = Constants.expoConfig?.hostUri || '';
-  const ip = debuggerHost.split(':')[0];
-  return ip ? `http://${ip}:5000` : 'http://10.0.2.2:5000';
+  const hostUri = Constants.expoConfig?.hostUri || Constants.manifest?.debuggerHost || '';
+  const ip = hostUri.split(':')[0];
+  if (ip) return `http://${ip}:5000`;
+  return 'http://10.0.2.2:5000';
 };
 
 const API = axios.create({ baseURL: getBaseUrl() });
@@ -41,6 +42,12 @@ export const fetchProducts = () =>
 
 export const addProduct = (data: { title: string; price: number; description?: string; image_url?: string; category_id?: number }, token: string) =>
   API.post<Product>('/api/products', data, { headers: { Authorization: token } });
+
+export const updateProduct = (
+  id: number,
+  data: { title?: string; price?: number; description?: string; image_url?: string; category_id?: number },
+  token: string
+) => API.put<Product>(`/api/products/${id}`, data, { headers: { Authorization: token } });
 
 export const deleteProduct = (id: number, token: string) =>
   API.delete<{ message: string }>(`/api/products/${id}`, { headers: { Authorization: token } });
