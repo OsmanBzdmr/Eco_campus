@@ -43,3 +43,27 @@ exports.login = async (req, res, next) => {
     next(err);
   }
 };
+
+exports.getMe = (req, res, next) => {
+  try {
+    const user_id = req.user_id;
+
+    const user = db.prepare('SELECT id, username, email, created_at FROM users WHERE id = ?').get(user_id);
+    if (!user) return res.status(404).json({ message: 'Kullanıcı bulunamadı' });
+
+    const products = db.prepare('SELECT * FROM products WHERE user_id = ? ORDER BY id DESC').all(user_id);
+
+    const totalListings = products.length;
+    const donationListings = products.filter((p) => p.price === 0).length;
+    const activeListings = totalListings - donationListings;
+    const totalValue = products.reduce((sum, p) => sum + (p.price || 0), 0);
+
+    res.json({
+      user,
+      stats: { totalListings, activeListings, donationListings, totalValue },
+      listings: products,
+    });
+  } catch (err) {
+    next(err);
+  }
+};

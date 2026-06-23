@@ -2,7 +2,7 @@ const db = require('../config/db');
 
 exports.getProducts = (req, res, next) => {
   try {
-    const { search, category_id, page, limit } = req.query;
+    const { search, category_id, page, limit, sort, order } = req.query;
 
     let whereClauses = [];
     let params = [];
@@ -19,6 +19,12 @@ exports.getProducts = (req, res, next) => {
 
     const whereSQL = whereClauses.length > 0 ? 'WHERE ' + whereClauses.join(' AND ') : '';
 
+    // Sıralama: izin verilen kolonlar dışında varsayılan kullan (SQL injection önlemi)
+    const allowedSortCols = ['id', 'title', 'price', 'created_at'];
+    const sortCol = allowedSortCols.includes(sort) ? sort : 'id';
+    const sortDir = order && order.toLowerCase() === 'asc' ? 'ASC' : 'DESC';
+    const orderSQL = `ORDER BY ${sortCol} ${sortDir}`;
+
     // Sayfalama parametreleri varsa sayfalı, yoksa tümünü düz dizi olarak döndür
     if (page && limit) {
       const countRow = db.prepare(`SELECT COUNT(*) as cnt FROM products ${whereSQL}`).get(...params);
@@ -28,7 +34,7 @@ exports.getProducts = (req, res, next) => {
       const totalPages = Math.ceil(total / limitNum);
       const offset = (pageNum - 1) * limitNum;
 
-      const products = db.prepare(`SELECT * FROM products ${whereSQL} ORDER BY id DESC LIMIT ? OFFSET ?`).all(...params, limitNum, offset);
+      const products = db.prepare(`SELECT * FROM products ${whereSQL} ${orderSQL} LIMIT ? OFFSET ?`).all(...params, limitNum, offset);
 
       res.set({
         'X-Total-Count': total,
@@ -40,7 +46,7 @@ exports.getProducts = (req, res, next) => {
     }
 
     // Geriye dönük uyumluluk: parametre yoksa düz dizi
-    const products = db.prepare(`SELECT * FROM products ${whereSQL} ORDER BY id DESC`).all(...params);
+    const products = db.prepare(`SELECT * FROM products ${whereSQL} ${orderSQL}`).all(...params);
     res.json(products);
   } catch (err) {
     next(err);

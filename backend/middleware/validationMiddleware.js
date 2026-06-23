@@ -87,6 +87,12 @@ const listProductsValidation = [
   query('search')
     .optional()
     .trim(),
+  query('sort')
+    .optional()
+    .isIn(['id', 'title', 'price', 'created_at']).withMessage('Geçerli sıralama alanı: id, title, price, created_at'),
+  query('order')
+    .optional()
+    .isIn(['asc', 'desc', 'ASC', 'DESC']).withMessage('Sıralama yönü asc veya desc olmalıdır'),
   handleValidationErrors,
 ];
 

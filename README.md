@@ -16,10 +16,10 @@
 - ✏️ **İlan Düzenleme** — Web ve mobil üzerinden mevcut ilanlarınızı düzenleyin, form otomatik doldurulur
 - 🗑️ **İlan Yönetimi** — Kendi ilanlarınızı oluşturun, düzenleyin ve silin (yetkisiz işlemler backend tarafından reddedilir)
 - 🔍 **Arama, Filtreleme ve Sayfalama** — Web'de arama kutusu + kategori dropdown'ı, 10 ürün/sayfa sayfalama kontrolleri (Önceki/Sonraki ve sayfa numaraları), backend'de sortalama, eski istemcilerle geriye dönük uyumlu
-- 📱 **Tam Mobil Destek** — Expo ile giriş, kayıt, ilan ekleme/düzenleme/silme, pull-to-refresh, auth guard ve güvenli token yönetimi (expo-secure-store)
+- 📱 **Tam Mobil Destek** — Expo ile giriş, kayıt, ilan ekleme/düzenleme/silme, pull-to-refresh, profil sayfası, auth guard ve güvenli token yönetimi (expo-secure-store)
 - 🛡️ **Güvenlik Sertleştirmesi** — Helmet güvenlik header'ları, genel ve auth'a özel rate limiting (brute-force koruması), tüm girdiler için sunucu taraflı doğrulama, kısıtlı CORS
 - ✅ **Test Edilmiş Backend** — Jest + Supertest ile auth ve ürün uçları için otomatik testler, ESLint ile kod kalitesi kontrolü
-- 👤 **Profil Sayfası** — Kullanıcı bilgileri, üyelik tarihi, kendi ilanlarının listesi ve istatistikler (web)
+- 👤 **Profil Sayfası** — Kullanıcı bilgileri, üyelik tarihi, kendi ilanlarının listesi ve istatistikler (web + mobil)
 - 🎨 **Modern UI** — Tailwind CSS ile responsive tasarım, toast bildirimleri, loading animasyonları
 
 ---
@@ -79,12 +79,13 @@ Eco_campus/
 │   │   ├── edit-product.tsx   # İlan düzenleme formu (useLocalSearchParams ile veri alır)
 │   │   ├── modal.tsx
 │   │   └── (tabs)/
-│   │       ├── _layout.tsx    # Tab navigator (İlanlar, İlan Ekle, Hakkında)
+│   │       ├── _layout.tsx    # Tab navigator (İlanlar, İlan Ekle, Hakkında, Profil)
 │   │       ├── index.tsx      # İlan listesi (silme, düzenleme, pull-to-refresh)
 │   │       ├── add-product.tsx# İlan ekleme formu
-│   │       └── explore.tsx    # Hakkında (uygulama bilgisi)
+│   │       ├── explore.tsx    # Hakkında (uygulama bilgisi)
+│   │       └── profile.tsx    # Profil ekranı — avatar, istatistikler, ilanlar, çıkış
 │   ├── services/
-│   │   ├── api.ts             # Axios API katmanı (7 endpoint: CRUD + auth + kategori)
+│   │   ├── api.ts             # Axios API katmanı (8 endpoint: CRUD + auth + kategori + profil)
 │   │   └── auth.ts            # Token saklama (expo-secure-store)
 │   ├── constants/theme.ts     # Web ile uyumlu eco renk paleti
 └── README.md
@@ -161,7 +162,7 @@ npx expo start
 # Expo Go uygulamasıyla QR kodu okutun
 ```
 
-> 📱 **Not:** Mobil uygulama açıldığında auth guard sizi giriş ekranına yönlendirir. `test@university.edu` / `test123` ile giriş yapabilir veya "Kayıt ol" linkinden yeni hesap oluşturabilirsiniz. Giriş sonrası ilanları görüntüleyebilir, silebilir ve "İlan Ekle" tab'ından yeni ilan verebilirsiniz.
+> 📱 **Not:** Mobil uygulama açıldığında auth guard sizi giriş ekranına yönlendirir. `test@university.edu` / `test123` ile giriş yapabilir veya "Kayıt ol" linkinden yeni hesap oluşturabilirsiniz. Giriş sonrası ilanları görüntüleyebilir, silebilir, "İlan Ekle" tab'ından yeni ilan verebilir ve "Profil" tab'ından istatistiklerinizi görebilirsiniz.
 
 ---
 
@@ -198,7 +199,7 @@ CORS_ORIGIN=http://localhost:5173,http://127.0.0.1:5173
 
 `CORS_ORIGIN` virgülle ayrılmış birden fazla origin alır; Vite `--host` ile başlatıldığında `127.0.0.1` üzerinden de erişilebildiği için her ikisini de eklemeniz önerilir.
 
-> **Web için:** Frontend, API'ye `VITE_API_URL` ortam değişkeni üzerinden bağlanır (`.env` ile yapılandırılır). Frontend'i çalıştırmadan önce backend'in ayakta olduğundan emin olun.
+> **Web için:** Vite proxy kullanılır (`vite.config.js` → `server.proxy`). `/api/*` istekleri otomatik olarak `http://localhost:5000`'e yönlendirilir. Frontend'i çalıştırmadan önce backend'in ayakta olduğundan emin olun.
 
 ---
 
