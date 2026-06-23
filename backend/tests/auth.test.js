@@ -2,8 +2,8 @@ const request = require('supertest');
 const app = require('../server');
 const { resetAndSeed } = require('./helpers/seed');
 
-beforeEach(() => {
-  resetAndSeed();
+beforeEach(async () => {
+  await resetAndSeed();
 });
 
 describe('POST /api/auth/register', () => {

@@ -7,10 +7,10 @@ const { createSchema, seedDemoData } = require('../../db/schema');
  * içinde çağrılarak her testin temiz/öngörülebilir bir durumdan
  * başlaması sağlanır.
  */
-function resetAndSeed() {
+async function resetAndSeed() {
   db.__reset();
-  createSchema(db);
-  return seedDemoData(db);
+  await createSchema(db);
+  await seedDemoData(db);
 }
 
 module.exports = { db, resetAndSeed };

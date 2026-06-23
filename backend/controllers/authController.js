@@ -6,20 +6,17 @@ exports.register = async (req, res, next) => {
   try {
     const { username, email, password } = req.body;
 
-    // Temel alan/format kontrolleri (zorunluluk, e-posta formatı, şifre
-    // uzunluğu vb.) artık registerValidation middleware'inde yapılıyor.
-    // Burada yalnızca veritabanına özgü iş kuralı (e-posta benzersizliği)
-    // kontrol edilir.
-    const existing = db.prepare('SELECT id FROM users WHERE email = ?').get(email);
+    const existing = (await db.query('SELECT id FROM users WHERE email = $1', [email])).rows[0];
     if (existing) {
       return res.status(409).json({ message: 'Bu e-posta ile zaten bir hesap var' });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const stmt = db.prepare('INSERT INTO users (username, email, password) VALUES (?, ?, ?)');
-    const info = stmt.run(username, email, hashedPassword);
-    const user = db.prepare('SELECT id, username, email FROM users WHERE id = ?').get(info.lastInsertRowid);
-    res.status(201).json(user);
+    const result = await db.query(
+      'INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING id, username, email',
+      [username, email, hashedPassword]
+    );
+    res.status(201).json(result.rows[0]);
   } catch (err) {
     next(err);
   }
@@ -29,8 +26,7 @@ exports.login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
-    // Alan zorunluluğu/format kontrolü loginValidation middleware'inde yapılır.
-    const user = db.prepare('SELECT * FROM users WHERE email = ?').get(email);
+    const user = (await db.query('SELECT * FROM users WHERE email = $1', [email])).rows[0];
     const validPassword = user ? await bcrypt.compare(password, user.password) : false;
 
     if (!user || !validPassword) {
@@ -44,19 +40,19 @@ exports.login = async (req, res, next) => {
   }
 };
 
-exports.getMe = (req, res, next) => {
+exports.getMe = async (req, res, next) => {
   try {
     const user_id = req.user_id;
 
-    const user = db.prepare('SELECT id, username, email, created_at FROM users WHERE id = ?').get(user_id);
+    const user = (await db.query('SELECT id, username, email, created_at FROM users WHERE id = $1', [user_id])).rows[0];
     if (!user) return res.status(404).json({ message: 'Kullanıcı bulunamadı' });
 
-    const products = db.prepare('SELECT * FROM products WHERE user_id = ? ORDER BY id DESC').all(user_id);
+    const products = (await db.query('SELECT * FROM products WHERE user_id = $1 ORDER BY id DESC', [user_id])).rows;
 
     const totalListings = products.length;
-    const donationListings = products.filter((p) => p.price === 0).length;
+    const donationListings = products.filter((p) => parseFloat(p.price) === 0).length;
     const activeListings = totalListings - donationListings;
-    const totalValue = products.reduce((sum, p) => sum + (p.price || 0), 0);
+    const totalValue = products.reduce((sum, p) => sum + parseFloat(p.price || 0), 0);
 
     res.json({
       user,

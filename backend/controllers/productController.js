@@ -1,40 +1,48 @@
 const db = require('../config/db');
 
-exports.getProducts = (req, res, next) => {
+function buildWhere(params, search, category_id) {
+  const clauses = [];
+  let idx = 0;
+
+  if (search) {
+    idx += 2;
+    clauses.push(`(title LIKE $${idx - 1} OR description LIKE $${idx})`);
+    params.push(`%${search}%`, `%${search}%`);
+  }
+
+  if (category_id) {
+    idx++;
+    clauses.push(`category_id = $${idx}`);
+    params.push(category_id);
+  }
+
+  return clauses.length > 0 ? 'WHERE ' + clauses.join(' AND ') : '';
+}
+
+exports.getProducts = async (req, res, next) => {
   try {
     const { search, category_id, page, limit, sort, order } = req.query;
 
-    let whereClauses = [];
-    let params = [];
+    const params = [];
+    const whereSQL = buildWhere(params, search, category_id);
 
-    if (search) {
-      whereClauses.push('(title LIKE ? OR description LIKE ?)');
-      params.push(`%${search}%`, `%${search}%`);
-    }
-
-    if (category_id) {
-      whereClauses.push('category_id = ?');
-      params.push(category_id);
-    }
-
-    const whereSQL = whereClauses.length > 0 ? 'WHERE ' + whereClauses.join(' AND ') : '';
-
-    // Sıralama: izin verilen kolonlar dışında varsayılan kullan (SQL injection önlemi)
     const allowedSortCols = ['id', 'title', 'price', 'created_at'];
     const sortCol = allowedSortCols.includes(sort) ? sort : 'id';
     const sortDir = order && order.toLowerCase() === 'asc' ? 'ASC' : 'DESC';
     const orderSQL = `ORDER BY ${sortCol} ${sortDir}`;
 
-    // Sayfalama parametreleri varsa sayfalı, yoksa tümünü düz dizi olarak döndür
     if (page && limit) {
-      const countRow = db.prepare(`SELECT COUNT(*) as cnt FROM products ${whereSQL}`).get(...params);
+      const countRow = (await db.query(`SELECT COUNT(*)::int as cnt FROM products ${whereSQL}`, params)).rows[0];
       const total = countRow.cnt;
       const pageNum = parseInt(page);
       const limitNum = parseInt(limit);
       const totalPages = Math.ceil(total / limitNum);
       const offset = (pageNum - 1) * limitNum;
 
-      const products = db.prepare(`SELECT * FROM products ${whereSQL} ${orderSQL} LIMIT ? OFFSET ?`).all(...params, limitNum, offset);
+      const products = (await db.query(
+        `SELECT * FROM products ${whereSQL} ${orderSQL} LIMIT $${params.length + 1} OFFSET $${params.length + 2}`,
+        [...params, limitNum, offset]
+      )).rows;
 
       res.set({
         'X-Total-Count': total,
@@ -45,72 +53,73 @@ exports.getProducts = (req, res, next) => {
       return res.json(products);
     }
 
-    // Geriye dönük uyumluluk: parametre yoksa düz dizi
-    const products = db.prepare(`SELECT * FROM products ${whereSQL} ${orderSQL}`).all(...params);
+    const products = (await db.query(`SELECT * FROM products ${whereSQL} ${orderSQL}`, params)).rows;
     res.json(products);
   } catch (err) {
     next(err);
   }
 };
 
-exports.createProduct = (req, res, next) => {
+exports.createProduct = async (req, res, next) => {
   try {
     const user_id = req.user_id;
     const { title, price, description, image_url, category_id } = req.body;
 
-    const stmt = db.prepare(
-      'INSERT INTO products (title, price, description, image_url, category_id, user_id) VALUES (?, ?, ?, ?, ?, ?)'
+    const result = await db.query(
+      'INSERT INTO products (title, price, description, image_url, category_id, user_id) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
+      [title, price, description, image_url, category_id || 1, user_id]
     );
-    const info = stmt.run(title, price, description, image_url, category_id || 1, user_id);
-    const product = db.prepare('SELECT * FROM products WHERE id = ?').get(info.lastInsertRowid);
-    res.status(201).json(product);
+    res.status(201).json(result.rows[0]);
   } catch (err) {
     next(err);
   }
 };
 
-exports.updateProduct = (req, res, next) => {
+exports.updateProduct = async (req, res, next) => {
   try {
     const user_id = req.user_id;
     const { id } = req.params;
     const { title, price, description, image_url, category_id } = req.body;
 
-    const product = db.prepare('SELECT * FROM products WHERE id = ?').get(id);
+    const product = (await db.query('SELECT * FROM products WHERE id = $1', [id])).rows[0];
     if (!product) return res.status(404).json({ message: 'Ürün bulunamadı' });
     if (product.user_id !== user_id) return res.status(403).json({ message: 'Bu ürünü düzenleme yetkiniz yok' });
 
-    const fields = [];
+    const setClauses = [];
     const params = [];
+    let idx = 0;
 
-    if (title !== undefined) { fields.push('title = ?'); params.push(title); }
-    if (price !== undefined) { fields.push('price = ?'); params.push(price); }
-    if (description !== undefined) { fields.push('description = ?'); params.push(description); }
-    if (image_url !== undefined) { fields.push('image_url = ?'); params.push(image_url); }
-    if (category_id !== undefined) { fields.push('category_id = ?'); params.push(category_id); }
+    if (title !== undefined) { idx++; setClauses.push(`title = $${idx}`); params.push(title); }
+    if (price !== undefined) { idx++; setClauses.push(`price = $${idx}`); params.push(price); }
+    if (description !== undefined) { idx++; setClauses.push(`description = $${idx}`); params.push(description); }
+    if (image_url !== undefined) { idx++; setClauses.push(`image_url = $${idx}`); params.push(image_url); }
+    if (category_id !== undefined) { idx++; setClauses.push(`category_id = $${idx}`); params.push(category_id); }
 
-    if (fields.length === 0) {
+    if (setClauses.length === 0) {
       return res.status(400).json({ message: 'Güncellenecek alan bulunamadı' });
     }
 
     params.push(id);
-    db.prepare(`UPDATE products SET ${fields.join(', ')} WHERE id = ?`).run(...params);
-    const updated = db.prepare('SELECT * FROM products WHERE id = ?').get(id);
-    res.json(updated);
+    const result = await db.query(
+      `UPDATE products SET ${setClauses.join(', ')} WHERE id = $${idx + 1} RETURNING *`,
+      params
+    );
+    res.json(result.rows[0]);
   } catch (err) {
     next(err);
   }
 };
 
-exports.deleteProduct = (req, res, next) => {
+exports.deleteProduct = async (req, res, next) => {
   try {
     const user_id = req.user_id;
     const { id } = req.params;
 
-    const product = db.prepare('SELECT * FROM products WHERE id = ?').get(id);
+    const product = (await db.query('SELECT * FROM products WHERE id = $1', [id])).rows[0];
     if (!product) return res.status(404).json({ message: 'Ürün bulunamadı' });
     if (product.user_id !== user_id) return res.status(403).json({ message: 'Bu ürünü silme yetkiniz yok' });
 
-    db.prepare('DELETE FROM products WHERE id = ?').run(id);
+    await db.query('DELETE FROM products WHERE id = $1', [id]);
     res.json({ message: 'Ürün silindi' });
   } catch (err) {
     next(err);

@@ -191,6 +191,22 @@ function createMockDb() {
     };
   }
 
+  // pg parametre stilini ($1, $2) soru işaretine çevirir, RETURNING ve ::type cast'leri ayıklar
+  function pgToSqlite(sql) {
+    const noReturns = sql.replace(/\s+RETURNING\s+.+$/i, '');
+    const noCast = noReturns.replace(/::\w+/g, '');
+    return noCast.replace(/\$\d+/g, () => '?');
+  }
+
+  function hasReturning(sql) {
+    return /\s+RETURNING\s+/i.test(sql);
+  }
+
+  function extractReturningCols(sql) {
+    const m = sql.match(/\s+RETURNING\s+(.+)$/i);
+    return m ? m[1].split(',').map((c) => c.trim()) : null;
+  }
+
   return {
     exec(sql) {
       // CREATE TABLE IF NOT EXISTS <name> (...) deyimlerini ayrıştırıp
@@ -207,6 +223,54 @@ function createMockDb() {
     },
     prepare(sql) {
       return statement(sql);
+    },
+    /** pg-style async query metodu — mock'u controller'lardaki db.query() çağrılarıyla uyumlu kılar */
+    async query(sql, params = []) {
+      const sqliteSql = pgToSqlite(sql);
+
+      // DDL (CREATE TABLE) — exec'e yönlendir
+      if (/CREATE\s+TABLE/i.test(sqliteSql.trim())) {
+        this.exec(sqliteSql);
+        return { rows: [], rowCount: 0 };
+      }
+
+      const stmt = statement(sqliteSql);
+      const returningCols = extractReturningCols(sql);
+
+      if (/^SELECT/i.test(sqliteSql.trim())) {
+        const rows = stmt.all(...params).map((r) => {
+          // RETURNING * olan SELECT'ler için tüm kolonları döndür
+          return r;
+        });
+        return { rows, rowCount: rows.length };
+      }
+
+      // INSERT, UPDATE, DELETE
+      const result = stmt.run(...params);
+
+      if (hasReturning(sql) && returningCols) {
+        const tableMatch = sqliteSql.match(/INSERT INTO (\w+)/i) || sqliteSql.match(/(?:UPDATE|DELETE)\s+(\w+)/i);
+        if (tableMatch) {
+          const tableName = tableMatch[1];
+          const rows = ensureTable(tableName);
+          // UPDATE/DELETE için WHERE id = ?'den id değerini bul
+          const idMatch = sqliteSql.match(/WHERE id = \?$/i);
+          const targetRow = idMatch
+            ? rows.find(r => r.id == params[params.length - 1])
+            : rows[rows.length - 1];
+          const row = targetRow || {};
+          if (returningCols.length === 1 && returningCols[0] === '*') {
+            return { rows: [row], rowCount: 1 };
+          }
+          const projected = {};
+          returningCols.forEach((c) => {
+            projected[c] = row[c];
+          });
+          return { rows: [projected], rowCount: 1 };
+        }
+      }
+
+      return { rows: [], rowCount: result.changes || 0 };
     },
     close() {
       // no-op

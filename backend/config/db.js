@@ -1,11 +1,9 @@
-const Database = require('better-sqlite3');
+const { Pool } = require('pg');
 const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
 
-const dbPath = path.join(__dirname, '..', process.env.DB_PATH || 'ecocampus.db');
-const db = new Database(dbPath);
-
-db.pragma('journal_mode = WAL');
-db.pragma('foreign_keys = ON');
+const db = new Pool({
+  connectionString: process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/ecocampus',
+});
 
 module.exports = db;

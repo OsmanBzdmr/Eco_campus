@@ -3,8 +3,8 @@ const app = require('../server');
 const { resetAndSeed } = require('./helpers/seed');
 const { loginAsTestUser, registerAndLogin } = require('./helpers/auth');
 
-beforeEach(() => {
-  resetAndSeed();
+beforeEach(async () => {
+  await resetAndSeed();
 });
 
 describe('GET /api/products', () => {

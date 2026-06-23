@@ -1,8 +1,8 @@
 const db = require('../config/db');
 
-exports.getCategories = (req, res, next) => {
+exports.getCategories = async (req, res, next) => {
   try {
-    const categories = db.prepare('SELECT * FROM categories ORDER BY id').all();
+    const categories = (await db.query('SELECT * FROM categories ORDER BY id')).rows;
     res.json(categories);
   } catch (err) {
     next(err);

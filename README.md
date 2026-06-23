@@ -1,7 +1,7 @@
 # 🌿 EcoCampus — Sürdürülebilir Kampüs Pazaryeri
 
 **EcoCampus**, üniversite öğrencilerinin kampüs içinde eşya paylaşmasını, israfı azaltmasını ve öğrenci ekonomisini desteklemesini sağlayan modern bir full-stack pazaryeri platformudur.
-> React · Node.js · SQLite · JWT · Tailwind CSS · React Native (Expo)
+> React · Node.js · PostgreSQL · JWT · Tailwind CSS · React Native (Expo)
 
 ---
 
@@ -29,7 +29,7 @@
 | Katman | Teknoloji |
 |---|---|
 | Backend | Node.js, Express.js |
-| Veritabanı | SQLite |
+| Veritabanı | PostgreSQL |
 | Güvenlik | JWT, Bcryptjs, Helmet, express-rate-limit, express-validator |
 | Test & Kalite | Jest, Supertest, ESLint |
 | Web Frontend | React 19, Tailwind CSS v3, Axios, Lucide React |
@@ -43,7 +43,7 @@
 ```
 Eco_campus/
 ├── backend/
-│   ├── config/db.js          # SQLite bağlantısı
+│   ├── config/db.js          # PostgreSQL bağlantısı (Pool)
 │   ├── controllers/          # İş mantığı
 │   ├── db/schema.js          # Paylaşımlı şema + seed (setup-db.js ve testler kullanır)
 │   ├── middleware/
@@ -98,15 +98,22 @@ Eco_campus/
 ### Gereksinimler
 - Node.js 16+
 - npm
+- Docker (PostgreSQL için) veya lokal PostgreSQL kurulumu
 
 ### 1. Repoyu klonla
 
 ```bash
 git clone https://github.com/OsmanBzdmr/Ecocampus-Proje
-cd Ecocampus-Proje
+cd Eco_campus
 ```
 
-### 2. Veritabanını kur
+### 2. PostgreSQL'i başlat (Docker)
+
+```bash
+docker run -d --name ecocampus-pg -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=ecocampus -p 5432:5432 postgres:16
+```
+
+### 3. Veritabanını kur
 
 `backend/` klasöründe:
 
@@ -131,7 +138,7 @@ node setup-db.js
 
 İstersen web arayüzündeki **"Kayıt ol"** linkinden de yeni bir hesap oluşturabilirsin.
 
-### 3. Backend'i başlat
+### 4. Backend'i başlat
 
 ```bash
 node server.js
@@ -144,7 +151,7 @@ node server.js
 > npm run lint   # ESLint kontrolü
 > ```
 
-### 4. Web dashboard'u başlat
+### 5. Web dashboard'u başlat
 
 ```bash
 cd ../web
@@ -153,7 +160,7 @@ npm run dev
 # http://localhost:5173
 ```
 
-### 5. Mobil uygulamayı başlat
+### 6. Mobil uygulamayı başlat
 
 ```bash
 cd ../mobile
@@ -190,6 +197,7 @@ npx expo start
 `backend/.env` dosyasını `.env.example` dosyasından oluşturun:
 
 ```env
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/ecocampus
 JWT_SECRET=guclu_ve_rastgele_bir_deger_buraya
 PORT=5000
 CORS_ORIGIN=http://localhost:5173,http://127.0.0.1:5173
