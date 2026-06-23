@@ -103,7 +103,7 @@ Eco_campus/
 ### 1. Repoyu klonla
 
 ```bash
-git clone https://github.com/OsmanBzdmr/Ecocampus-Proje
+git clone https://github.com/OsmanBzdmr/Eco_campus
 cd Eco_campus
 ```
 
