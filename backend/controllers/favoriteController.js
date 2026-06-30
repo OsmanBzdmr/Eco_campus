@@ -8,20 +8,18 @@ exports.toggleFavorite = async (req, res, next) => {
     const product = (await db.query('SELECT id FROM products WHERE id = $1', [productId])).rows[0];
     if (!product) return res.status(404).json({ message: 'Ürün bulunamadı' });
 
-    const existing = (await db.query(
-      'SELECT id FROM favorites WHERE user_id = $1 AND product_id = $2',
+    const inserted = (await db.query(
+      `INSERT INTO favorites (user_id, product_id) VALUES ($1, $2)
+       ON CONFLICT (user_id, product_id) DO NOTHING
+       RETURNING id`,
       [user_id, productId]
     )).rows[0];
 
-    if (existing) {
-      await db.query('DELETE FROM favorites WHERE id = $1', [existing.id]);
-      res.json({ favorited: false });
-    } else {
-      await db.query(
-        'INSERT INTO favorites (user_id, product_id) VALUES ($1, $2)',
-        [user_id, productId]
-      );
+    if (inserted) {
       res.json({ favorited: true });
+    } else {
+      await db.query('DELETE FROM favorites WHERE user_id = $1 AND product_id = $2', [user_id, productId]);
+      res.json({ favorited: false });
     }
   } catch (err) {
     next(err);

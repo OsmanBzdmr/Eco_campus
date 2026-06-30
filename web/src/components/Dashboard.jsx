@@ -8,6 +8,15 @@ import StatsCard from './StatsCard';
 import Toast from './Toast';
 import ProfilePage from './ProfilePage';
 
+function getUserIdFromToken(token) {
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return payload.id;
+  } catch {
+    return null;
+  }
+}
+
 export default function Dashboard({ token, onLogout }) {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [products, setProducts] = useState([]);
@@ -17,6 +26,7 @@ export default function Dashboard({ token, onLogout }) {
   const [toast, setToast] = useState(null);
   const [editingProduct, setEditingProduct] = useState(null);
   const [detailProductId, setDetailProductId] = useState(null);
+  const currentUserId = getUserIdFromToken(token);
 
   // Search / filter / pagination
   const [search, setSearch] = useState('');
@@ -83,6 +93,10 @@ export default function Dashboard({ token, onLogout }) {
   useEffect(() => {
     if (activeTab === 'favorites') loadFavorites();
   }, [activeTab, loadFavorites]);
+
+  useEffect(() => {
+    loadFavorites();
+  }, [loadFavorites]);
 
   const handleToggleFavorite = async (productId) => {
     try {
@@ -365,6 +379,7 @@ export default function Dashboard({ token, onLogout }) {
                   onToggleFavorite={handleToggleFavorite}
                   loading={loading}
                   categories={categories}
+                  currentUserId={currentUserId}
                 />
 
                 {/* Pagination */}
@@ -427,6 +442,7 @@ export default function Dashboard({ token, onLogout }) {
                     onToggleFavorite={handleToggleFavorite}
                     loading={favoritesLoading}
                     categories={categories}
+                    currentUserId={currentUserId}
                   />
                 )}
               </div>

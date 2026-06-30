@@ -1,7 +1,7 @@
 import React from 'react';
 import { Trash2, Pencil, Heart, AlertCircle } from 'lucide-react';
 
-export default function ProductTable({ products, onDelete, onEdit, onViewDetail, onToggleFavorite, loading, categories = [] }) {
+export default function ProductTable({ products, onDelete, onEdit, onViewDetail, onToggleFavorite, loading, categories = [], currentUserId }) {
   const getCategoryName = (categoryId) => {
     const cat = categories.find((c) => c.id === categoryId);
     return cat ? cat.name : '—';
@@ -101,22 +101,24 @@ export default function ProductTable({ products, onDelete, onEdit, onViewDetail,
                     </span>
                   </td>
                   <td className="py-4 px-4">
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => onEdit(product)}
-                        className="flex items-center gap-2 text-eco-600 hover:text-eco-800 hover:bg-eco-50 px-3 py-2 rounded-lg transition font-medium"
-                      >
-                        <Pencil className="w-4 h-4" />
-                        Düzenle
-                      </button>
-                      <button
-                        onClick={() => onDelete(product.id)}
-                        className="flex items-center gap-2 text-red-600 hover:text-red-800 hover:bg-red-50 px-3 py-2 rounded-lg transition font-medium"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                        Sil
-                      </button>
-                    </div>
+                    {currentUserId && product.user_id === currentUserId ? (
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => onEdit(product)}
+                          className="flex items-center gap-2 text-eco-600 hover:text-eco-800 hover:bg-eco-50 px-3 py-2 rounded-lg transition font-medium"
+                        >
+                          <Pencil className="w-4 h-4" />
+                          Düzenle
+                        </button>
+                        <button
+                          onClick={() => onDelete(product.id)}
+                          className="flex items-center gap-2 text-red-600 hover:text-red-800 hover:bg-red-50 px-3 py-2 rounded-lg transition font-medium"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                          Sil
+                        </button>
+                      </div>
+                    ) : null}
                   </td>
                   <td className="py-4 px-4 text-center">
                     <button
@@ -182,20 +184,24 @@ export default function ProductTable({ products, onDelete, onEdit, onViewDetail,
                     className={`w-5 h-5 ${product.is_favorited ? 'fill-red-500 text-red-500' : 'text-gray-400'}`}
                   />
                 </button>
-                <button
-                  onClick={() => onEdit(product)}
-                  className="flex-1 flex items-center justify-center gap-2 text-eco-600 hover:text-eco-800 hover:bg-eco-50 px-3 py-2 rounded-lg transition font-medium border border-eco-200"
-                >
-                  <Pencil className="w-4 h-4" />
-                  Düzenle
-                </button>
-                <button
-                  onClick={() => onDelete(product.id)}
-                  className="flex-1 flex items-center justify-center gap-2 text-red-600 hover:text-red-800 hover:bg-red-50 px-3 py-2 rounded-lg transition font-medium"
-                >
-                  <Trash2 className="w-4 h-4" />
-                  Sil
-                </button>
+                {currentUserId && product.user_id === currentUserId ? (
+                  <>
+                    <button
+                      onClick={() => onEdit(product)}
+                      className="flex-1 flex items-center justify-center gap-2 text-eco-600 hover:text-eco-800 hover:bg-eco-50 px-3 py-2 rounded-lg transition font-medium border border-eco-200"
+                    >
+                      <Pencil className="w-4 h-4" />
+                      Düzenle
+                    </button>
+                    <button
+                      onClick={() => onDelete(product.id)}
+                      className="flex-1 flex items-center justify-center gap-2 text-red-600 hover:text-red-800 hover:bg-red-50 px-3 py-2 rounded-lg transition font-medium"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      Sil
+                    </button>
+                  </>
+                ) : null}
               </div>
             </div>
           ))}
