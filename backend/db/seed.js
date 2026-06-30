@@ -19,7 +19,7 @@ async function seedDemoData(db) {
 
   const existingProducts = await db.query('SELECT COUNT(*)::int as cnt FROM products');
   if (existingProducts.rows[0].cnt > 0) {
-    await db.query('DELETE FROM products');
+    await db.query('TRUNCATE TABLE products RESTART IDENTITY CASCADE');
   }
 
   const userResult = await db.query('SELECT id FROM users WHERE email = $1', ['test@university.edu']);

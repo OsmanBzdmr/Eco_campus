@@ -15,10 +15,10 @@ export const getProductById = (id, token) => {
   return API.get(`/api/products/${id}`, config);
 };
 export const addProduct = (data, token) => API.post('/api/products', data, {
-  headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' }
+  headers: { Authorization: `Bearer ${token}` }
 });
 export const updateProduct = (id, data, token) => API.put(`/api/products/${id}`, data, {
-  headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' }
+  headers: { Authorization: `Bearer ${token}` }
 });
 export const deleteProduct = (id, token) => API.delete(`/api/products/${id}`, {
   headers: { Authorization: `Bearer ${token}` }

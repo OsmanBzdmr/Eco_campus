@@ -57,8 +57,12 @@ app.use((req, res) => {
 app.use((err, req, res, _next) => {
   console.error('Hata yakalandı:', err);
 
+  let statusCode = err.status || err.statusCode || 500;
+  if (err.code === 'LIMIT_FILE_SIZE') statusCode = 413;
+  if (err.message && err.message.includes('Yalnızca resim dosyaları')) statusCode = 415;
+
   const isDev = process.env.NODE_ENV !== 'production';
-  res.status(err.status || 500).json({
+  res.status(statusCode).json({
     message: isDev ? err.message : 'Sunucuda bir hata oluştu',
   });
 });

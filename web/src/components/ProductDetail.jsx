@@ -9,9 +9,10 @@ export default function ProductDetail({ productId, onClose, token, onToggleFavor
   useEffect(() => {
     if (!productId) return;
     setLoading(true);
+    setProduct(null);
     getProductById(productId, token)
       .then((res) => setProduct(res.data))
-      .catch(() => {})
+      .catch(() => setProduct(null))
       .finally(() => setLoading(false));
   }, [productId, token]);
 
@@ -28,7 +29,6 @@ export default function ProductDetail({ productId, onClose, token, onToggleFavor
                 <button
                   onClick={() => {
                     if (onToggleFavorite) onToggleFavorite(productId);
-                    setProduct((prev) => prev ? { ...prev, is_favorited: !prev.is_favorited } : prev);
                   }}
                   className="p-2 hover:bg-gray-100 rounded-lg transition"
                 >

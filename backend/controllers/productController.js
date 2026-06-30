@@ -52,7 +52,7 @@ exports.getProductById = async (req, res, next) => {
   try {
     const { id } = req.params;
     const product = (await db.query(
-      'SELECT p.*, u.username, c.name as category_name FROM products p JOIN users u ON p.user_id = u.id JOIN categories c ON p.category_id = c.id WHERE p.id = $1',
+      'SELECT p.*, u.username, c.name as category_name FROM products p JOIN users u ON p.user_id = u.id LEFT JOIN categories c ON p.category_id = c.id WHERE p.id = $1',
       [id]
     )).rows[0];
 
@@ -85,7 +85,7 @@ exports.getProducts = async (req, res, next) => {
       const offset = (pageNum - 1) * limitNum;
 
       const products = (await db.query(
-        `SELECT p.*, u.username, c.name as category_name FROM products p JOIN users u ON p.user_id = u.id JOIN categories c ON p.category_id = c.id ${whereSQL} ${orderSQL} LIMIT $${params.length + 1} OFFSET $${params.length + 2}`,
+        `SELECT p.*, u.username, c.name as category_name FROM products p JOIN users u ON p.user_id = u.id LEFT JOIN categories c ON p.category_id = c.id ${whereSQL} ${orderSQL} LIMIT $${params.length + 1} OFFSET $${params.length + 2}`,
         [...params, limitNum, offset]
       )).rows;
 
@@ -105,7 +105,7 @@ exports.getProducts = async (req, res, next) => {
       return res.json(productsWithFav);
     }
 
-    const products = (await db.query(`SELECT p.*, u.username, c.name as category_name FROM products p JOIN users u ON p.user_id = u.id JOIN categories c ON p.category_id = c.id ${whereSQL} ${orderSQL}`, params)).rows;
+    const products = (await db.query(`SELECT p.*, u.username, c.name as category_name FROM products p JOIN users u ON p.user_id = u.id LEFT JOIN categories c ON p.category_id = c.id ${whereSQL} ${orderSQL}`, params)).rows;
     const productsWithFav = await attachFavorited(products, req.user_id);
     res.json(productsWithFav);
   } catch (err) {

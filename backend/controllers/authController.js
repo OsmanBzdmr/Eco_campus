@@ -4,7 +4,8 @@ const jwt = require('jsonwebtoken');
 
 exports.register = async (req, res, next) => {
   try {
-    const { username, email, password } = req.body;
+    const { username, password } = req.body;
+    const email = req.body.email.toLowerCase();
 
     const existing = (await db.query('SELECT id FROM users WHERE email = $1', [email])).rows[0];
     if (existing) {
@@ -16,7 +17,8 @@ exports.register = async (req, res, next) => {
       'INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING id, username, email',
       [username, email, hashedPassword]
     );
-    res.status(201).json(result.rows[0]);
+    const token = jwt.sign({ id: result.rows[0].id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    res.status(201).json({ token, user: result.rows[0] });
   } catch (err) {
     next(err);
   }
@@ -24,7 +26,8 @@ exports.register = async (req, res, next) => {
 
 exports.login = async (req, res, next) => {
   try {
-    const { email, password } = req.body;
+    const { password } = req.body;
+    const email = req.body.email.toLowerCase();
 
     const user = (await db.query('SELECT * FROM users WHERE email = $1', [email])).rows[0];
     const validPassword = user ? await bcrypt.compare(password, user.password) : false;

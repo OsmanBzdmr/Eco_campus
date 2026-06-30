@@ -37,7 +37,7 @@ exports.getMyFavorites = async (req, res, next) => {
        FROM favorites f
        JOIN products p ON p.id = f.product_id
        JOIN users u ON p.user_id = u.id
-       JOIN categories c ON p.category_id = c.id
+       LEFT JOIN categories c ON p.category_id = c.id
        WHERE f.user_id = $1
        ORDER BY f.created_at DESC`,
       [user_id]

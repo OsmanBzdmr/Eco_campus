@@ -18,7 +18,7 @@ export default function LoginPage({ setToken, onSwitchToRegister }) {
       localStorage.setItem('token', res.data.token);
       setToken(res.data.token);
     } catch (err) {
-      setError('E-posta veya şifre hatalı');
+      setError(err.response?.data?.message || 'E-posta veya şifre hatalı');
       console.error(err);
     } finally {
       setLoading(false);

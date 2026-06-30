@@ -16,8 +16,8 @@ describe('POST /api/auth/register', () => {
     });
 
     expect(res.status).toBe(201);
-    expect(res.body).toMatchObject({ username: 'yeniKullanici', email: 'yeni@university.edu' });
-    expect(res.body.password).toBeUndefined();
+    expect(res.body).toMatchObject({ token: expect.any(String), user: { username: 'yeniKullanici', email: 'yeni@university.edu' } });
+    expect(res.body.user.password).toBeUndefined();
   });
 
   it('eksik alanlarda 400 ve doğrulama hatası döner', async () => {

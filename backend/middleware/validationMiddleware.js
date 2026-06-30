@@ -1,4 +1,4 @@
-const { body, query, validationResult } = require('express-validator');
+const { body, query, param, validationResult } = require('express-validator');
 
 const handleValidationErrors = (req, res, next) => {
   const errors = validationResult(req);
@@ -89,7 +89,13 @@ const listProductsValidation = [
     .trim(),
   query('min_price')
     .optional()
-    .isFloat({ min: 0 }).withMessage('Minimum fiyat 0 veya pozitif olmalıdır'),
+    .isFloat({ min: 0 }).withMessage('Minimum fiyat 0 veya pozitif olmalıdır')
+    .custom((val, { req }) => {
+      if (req.query.max_price !== undefined && req.query.max_price !== '' && parseFloat(val) > parseFloat(req.query.max_price)) {
+        throw new Error('Minimum fiyat, maksimum fiyattan büyük olamaz');
+      }
+      return true;
+    }),
   query('max_price')
     .optional()
     .isFloat({ min: 0 }).withMessage('Maksimum fiyat 0 veya pozitif olmalıdır'),
@@ -111,6 +117,16 @@ const deleteAccountValidation = [
   handleValidationErrors,
 ];
 
+const productIdParamValidation = [
+  param('id').isInt({ min: 1 }).withMessage('Geçerli bir ürün ID giriniz'),
+  handleValidationErrors,
+];
+
+const favoriteProductIdParamValidation = [
+  param('productId').isInt({ min: 1 }).withMessage('Geçerli bir ürün ID giriniz'),
+  handleValidationErrors,
+];
+
 module.exports = {
   registerValidation,
   loginValidation,
@@ -118,4 +134,6 @@ module.exports = {
   updateProductValidation,
   listProductsValidation,
   deleteAccountValidation,
+  productIdParamValidation,
+  favoriteProductIdParamValidation,
 };

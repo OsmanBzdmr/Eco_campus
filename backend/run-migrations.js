@@ -55,5 +55,5 @@ if (require.main === module) {
       console.error('Migration hatası:', err.message);
       process.exit(1);
     }
-  })();
+  })().finally(() => db.end());
 }

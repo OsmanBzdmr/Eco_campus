@@ -26,7 +26,8 @@ const FilterBar = React.memo(({
   setMaxPrice: (v: string) => void;
   setFiltersDirty: React.Dispatch<React.SetStateAction<number>>;
 }) => {
-  const timeout = useRef<NodeJS.Timeout | null>(null);
+  const searchTimeout = useRef<NodeJS.Timeout | null>(null);
+  const priceTimeout = useRef<NodeJS.Timeout | null>(null);
   return (
     <View style={styles.filterBar}>
       <TextInput
@@ -36,8 +37,8 @@ const FilterBar = React.memo(({
         value={search}
         onChangeText={(t) => {
           setSearch(t);
-          if (timeout.current) clearTimeout(timeout.current);
-          timeout.current = setTimeout(() => setFiltersDirty((c) => c + 1), 300);
+          if (searchTimeout.current) clearTimeout(searchTimeout.current);
+          searchTimeout.current = setTimeout(() => setFiltersDirty((c) => c + 1), 300);
         }}
       />
       <View style={styles.filterRow}>
@@ -78,8 +79,8 @@ const FilterBar = React.memo(({
           value={minPrice}
           onChangeText={(t) => {
             setMinPrice(t);
-            if (timeout.current) clearTimeout(timeout.current);
-            timeout.current = setTimeout(() => setFiltersDirty((c) => c + 1), 300);
+            if (priceTimeout.current) clearTimeout(priceTimeout.current);
+            priceTimeout.current = setTimeout(() => setFiltersDirty((c) => c + 1), 300);
           }}
           keyboardType="decimal-pad"
         />
@@ -91,8 +92,8 @@ const FilterBar = React.memo(({
           value={maxPrice}
           onChangeText={(t) => {
             setMaxPrice(t);
-            if (timeout.current) clearTimeout(timeout.current);
-            timeout.current = setTimeout(() => setFiltersDirty((c) => c + 1), 300);
+            if (priceTimeout.current) clearTimeout(priceTimeout.current);
+            priceTimeout.current = setTimeout(() => setFiltersDirty((c) => c + 1), 300);
           }}
           keyboardType="decimal-pad"
         />

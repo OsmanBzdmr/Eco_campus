@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { LogOut, Package, Home, Leaf, Search, ChevronLeft, ChevronRight, User, Heart, ShoppingBag, Gift } from 'lucide-react';
 import { fetchProducts as fetchProductsApi, deleteProduct as deleteProductApi, fetchCategories, toggleFavorite as toggleFavoriteApi, getFavorites as getFavoritesApi } from '../services/api';
 import ProductForm from './ProductForm';
@@ -29,7 +29,6 @@ export default function Dashboard({ token, onLogout }) {
   const [totalCount, setTotalCount] = useState(0);
   const [forSaleCount, setForSaleCount] = useState(0);
   const [donationCount, setDonationCount] = useState(0);
-  const [initialLoadDone, setInitialLoadDone] = useState(false);
   const [categories, setCategories] = useState([]);
   const [favorites, setFavorites] = useState([]);
   const [favoritesLoading, setFavoritesLoading] = useState(false);
@@ -64,8 +63,10 @@ export default function Dashboard({ token, onLogout }) {
   }, [search, categoryFilter, minPrice, maxPrice, statusFilter, page, limit, token]);
 
   useEffect(() => {
-    loadProducts();
-  }, [loadProducts]);
+    if (activeTab === 'products' || activeTab === 'dashboard') {
+      loadProducts();
+    }
+  }, [loadProducts, activeTab]);
 
   const loadFavorites = useCallback(async () => {
     setFavoritesLoading(true);
@@ -86,9 +87,10 @@ export default function Dashboard({ token, onLogout }) {
   const handleToggleFavorite = async (productId) => {
     try {
       await toggleFavoriteApi(productId, token);
-      loadProducts();
-      loadFavorites();
+      if (activeTab === 'products' || activeTab === 'dashboard') loadProducts();
+      if (activeTab === 'favorites') loadFavorites();
     } catch (err) {
+      setToast({ type: 'error', message: 'Favori işlemi başarısız' });
       console.error('Favori toggle hatası:', err);
     }
   };
@@ -117,6 +119,8 @@ export default function Dashboard({ token, onLogout }) {
     setStatusFilter(e.target.value);
     setPage(1);
   };
+
+  const handleCloseToast = useCallback(() => setToast(null), []);
 
   const handleViewDetail = (product) => {
     setDetailProductId(product.id);
@@ -153,7 +157,7 @@ export default function Dashboard({ token, onLogout }) {
 
   return (
     <>
-      {toast && <Toast toast={toast} onClose={() => setToast(null)} />}
+      {toast && <Toast toast={toast} onClose={handleCloseToast} />}
 
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex flex-col md:flex-row">
         {/* Sidebar */}
@@ -421,7 +425,7 @@ export default function Dashboard({ token, onLogout }) {
                     onEdit={handleEdit}
                     onViewDetail={handleViewDetail}
                     onToggleFavorite={handleToggleFavorite}
-                    loading={false}
+                    loading={favoritesLoading}
                     categories={categories}
                   />
                 )}

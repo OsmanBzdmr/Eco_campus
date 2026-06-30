@@ -7,7 +7,8 @@ import { getToken } from '@/services/auth';
 
 export default function EditProductScreen() {
   const { product: productParam } = useLocalSearchParams<{ product: string }>();
-  const product: Product = JSON.parse(productParam || '{}');
+  const parsed = JSON.parse(productParam || 'null');
+  const product: Product = parsed && typeof parsed.id === 'number' ? parsed : {} as Product;
 
   const [categories, setCategories] = useState<Category[]>([]);
   const [title, setTitle] = useState(product.title || '');

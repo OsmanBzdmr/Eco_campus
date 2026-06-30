@@ -10,13 +10,15 @@ export default function DetailScreen() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!id) return;
+    if (!id) { setLoading(false); return; }
     setLoading(true);
     (async () => {
       const token = await getToken();
       const res = await getProductById(parseInt(id), token || undefined);
       setProduct(res.data);
-    })().catch(() => {}).finally(() => setLoading(false));
+    })().catch(() => {
+      setProduct(null);
+    }).finally(() => setLoading(false));
   }, [id]);
 
   return (

@@ -119,11 +119,11 @@ export default function ProfilePage({ token, onLogout }) {
                     <span
                       className={`px-3 py-1 rounded-full text-xs font-semibold ${
                         item.price > 0
-                          ? 'bg-green-100 text-green-700'
+                          ? 'bg-blue-100 text-blue-700'
                           : 'bg-amber-100 text-amber-700'
                       }`}
                     >
-                      {item.price > 0 ? 'Aktif' : 'Bağış'}
+                      {item.price > 0 ? 'Satılık' : 'Bağış'}
                     </span>
                     {item.status && (
                       <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
