@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Plus, Pencil, Loader, X } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Plus, Pencil, Loader, X, Trash2 } from 'lucide-react';
 import { addProduct as addProductApi, updateProduct as updateProductApi, fetchCategories } from '../services/api';
 import Toast from './Toast';
 
@@ -14,9 +14,14 @@ export default function ProductForm({ token, editingProduct, onProductAdded, onC
     status: 'active',
   });
   const [imageFile, setImageFile] = useState(null);
+  const [imageRemoved, setImageRemoved] = useState(false);
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState(null);
+  const fileInputRef = useRef(null);
   const isEditing = !!editingProduct;
+
+  const hasExistingImage = isEditing && editingProduct.image_url && !imageRemoved && !imageFile;
+  const hasNewImage = imageFile != null;
 
   useEffect(() => {
     fetchCategories()
@@ -40,6 +45,7 @@ export default function ProductForm({ token, editingProduct, onProductAdded, onC
         status: editingProduct.status || 'active',
       });
       setImageFile(null);
+      setImageRemoved(false);
     } else if (categories.length > 0) {
       setForm((prev) => ({
         ...prev,
@@ -63,10 +69,16 @@ export default function ProductForm({ token, editingProduct, onProductAdded, onC
       fd.append('title', form.title);
       fd.append('price', form.price);
       if (form.description) fd.append('description', form.description);
-      if (form.image_url && !imageFile) fd.append('image_url', form.image_url);
       if (form.category_id) fd.append('category_id', form.category_id);
       if (isEditing && form.status) fd.append('status', form.status);
-      if (imageFile) fd.append('image', imageFile);
+
+      if (imageFile) {
+        fd.append('image', imageFile);
+      } else if (isEditing && imageRemoved) {
+        fd.append('image_url', '');
+      } else if (form.image_url && !imageFile) {
+        fd.append('image_url', form.image_url);
+      }
 
       if (isEditing) {
         await updateProductApi(editingProduct.id, fd, token);
@@ -89,6 +101,7 @@ export default function ProductForm({ token, editingProduct, onProductAdded, onC
         status: 'active',
       });
       setImageFile(null);
+      setImageRemoved(false);
 
       onProductAdded();
     } catch (error) {
@@ -195,20 +208,62 @@ export default function ProductForm({ token, editingProduct, onProductAdded, onC
             <label className="block text-xs font-semibold text-ink/70 dark:text-[var(--text-secondary)] uppercase tracking-wide mb-2">
               Görsel
             </label>
-            <input
-              type="file"
-              accept="image/jpeg,image/png,image/gif,image/webp"
-              onChange={(e) => setImageFile(e.target.files[0])}
-              className="w-full px-4 py-2.5 rounded-lg border border-line dark:border-[var(--border-color)] bg-paper/40 dark:bg-[var(--bg-tertiary)] dark:text-[var(--text-primary)] focus:ring-2 focus:ring-moss-400 focus:border-transparent outline-none transition file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-moss-100 dark:file:bg-moss-700 file:text-moss-700 dark:file:text-moss-200 file:font-semibold hover:file:bg-moss-200 dark:hover:file:bg-moss-600 font-body"
-            />
-            <p className="text-xs text-ink/40 dark:text-[var(--text-muted)] mt-1 font-body">JPG, PNG, GIF veya WEBP (max 5MB). Veya URL girmek isterseniz:</p>
-            <input
-              type="url"
-              value={form.image_url}
-              onChange={(e) => { setForm({ ...form, image_url: e.target.value }); setImageFile(null); }}
-              placeholder="https://example.com/image.jpg"
-              className="w-full px-4 py-2.5 rounded-lg border border-line dark:border-[var(--border-color)] bg-paper/40 dark:bg-[var(--bg-tertiary)] dark:text-[var(--text-primary)] focus:ring-2 focus:ring-moss-400 focus:border-transparent outline-none transition mt-2 font-body"
-            />
+
+            {hasExistingImage && (
+              <div className="relative inline-block mb-3">
+                <img
+                  src={editingProduct.image_url}
+                  alt="Mevcut görsel"
+                  className="h-28 w-28 rounded-lg object-cover border border-line dark:border-[var(--border-color)]"
+                />
+                <button
+                  type="button"
+                  onClick={() => { setImageRemoved(true); setImageFile(null); }}
+                  className="absolute -top-2 -right-2 p-1.5 bg-red-500 text-white rounded-full hover:bg-red-600 transition shadow-md"
+                  title="Görseli kaldır"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )}
+
+            {hasNewImage && (
+              <div className="relative inline-block mb-3">
+                <img
+                  src={URL.createObjectURL(imageFile)}
+                  alt="Seçilen görsel"
+                  className="h-28 w-28 rounded-lg object-cover border border-line dark:border-[var(--border-color)]"
+                />
+                <button
+                  type="button"
+                  onClick={() => { setImageFile(null); setImageRemoved(false); if (fileInputRef.current) fileInputRef.current.value = ''; }}
+                  className="absolute -top-2 -right-2 p-1.5 bg-red-500 text-white rounded-full hover:bg-red-600 transition shadow-md"
+                  title="Görseli kaldır"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )}
+
+            {!hasExistingImage && !hasNewImage && (
+              <>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/gif,image/webp"
+                  onChange={(e) => { setImageFile(e.target.files[0]); setImageRemoved(false); }}
+                  className="w-full px-4 py-2.5 rounded-lg border border-line dark:border-[var(--border-color)] bg-paper/40 dark:bg-[var(--bg-tertiary)] dark:text-[var(--text-primary)] focus:ring-2 focus:ring-moss-400 focus:border-transparent outline-none transition file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-moss-100 dark:file:bg-moss-700 file:text-moss-700 dark:file:text-moss-200 file:font-semibold hover:file:bg-moss-200 dark:hover:file:bg-moss-600 font-body"
+                />
+                <p className="text-xs text-ink/40 dark:text-[var(--text-muted)] mt-1 font-body">JPG, PNG, GIF veya WEBP (max 5MB). Veya URL girmek isterseniz:</p>
+                <input
+                  type="url"
+                  value={form.image_url}
+                  onChange={(e) => { setForm({ ...form, image_url: e.target.value }); setImageFile(null); setImageRemoved(false); }}
+                  placeholder="https://example.com/image.jpg"
+                  className="w-full px-4 py-2.5 rounded-lg border border-line dark:border-[var(--border-color)] bg-paper/40 dark:bg-[var(--bg-tertiary)] dark:text-[var(--text-primary)] focus:ring-2 focus:ring-moss-400 focus:border-transparent outline-none transition mt-2 font-body"
+                />
+              </>
+            )}
           </div>
 
           {isEditing && (

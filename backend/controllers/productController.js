@@ -1,4 +1,6 @@
 const db = require('../config/db');
+const fs = require('fs');
+const path = require('path');
 
 function buildWhere(params, search, category_id, min_price, max_price, status) {
   const clauses = [];
@@ -143,10 +145,25 @@ exports.updateProduct = async (req, res, next) => {
     const params = [];
     let idx = 0;
 
-    // Yüklenen dosya her zaman önceliklidir; body'den gelen image_url ile
-    // çakışmayı (aynı kolon için iki kez SET üretilmesini) önlemek için
-    // dosya varsa image_url alanı yok sayılır.
-    const effectiveImageUrl = req.file ? `/uploads/${req.file.filename}` : image_url;
+    let effectiveImageUrl;
+
+    if (req.file) {
+      // Yeni dosya yüklendi — eskiyi sil, yeniyi ata
+      effectiveImageUrl = `/uploads/${req.file.filename}`;
+      if (product.image_url) {
+        const oldPath = path.join(__dirname, '..', product.image_url);
+        fs.unlink(oldPath, () => {});
+      }
+    } else if (image_url === '') {
+      // Görsel kaldırıldı — eski dosyayı sil (varsa), NULL yap
+      if (product.image_url) {
+        const oldPath = path.join(__dirname, '..', product.image_url);
+        fs.unlink(oldPath, () => {});
+      }
+      effectiveImageUrl = null;
+    } else {
+      effectiveImageUrl = image_url;
+    }
 
     if (title !== undefined) { idx++; setClauses.push(`title = $${idx}`); params.push(title); }
     if (price !== undefined) { idx++; setClauses.push(`price = $${idx}`); params.push(price); }
