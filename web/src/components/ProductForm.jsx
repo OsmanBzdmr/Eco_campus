@@ -254,14 +254,7 @@ export default function ProductForm({ token, editingProduct, onProductAdded, onC
                   onChange={(e) => { setImageFile(e.target.files[0]); setImageRemoved(false); }}
                   className="w-full px-4 py-2.5 rounded-lg border border-line dark:border-[var(--border-color)] bg-paper/40 dark:bg-[var(--bg-tertiary)] dark:text-[var(--text-primary)] focus:ring-2 focus:ring-moss-400 focus:border-transparent outline-none transition file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-moss-100 dark:file:bg-moss-700 file:text-moss-700 dark:file:text-moss-200 file:font-semibold hover:file:bg-moss-200 dark:hover:file:bg-moss-600 font-body"
                 />
-                <p className="text-xs text-ink/40 dark:text-[var(--text-muted)] mt-1 font-body">JPG, PNG, GIF veya WEBP (max 5MB). Veya URL girmek isterseniz:</p>
-                <input
-                  type="url"
-                  value={form.image_url}
-                  onChange={(e) => { setForm({ ...form, image_url: e.target.value }); setImageFile(null); setImageRemoved(false); }}
-                  placeholder="https://example.com/image.jpg"
-                  className="w-full px-4 py-2.5 rounded-lg border border-line dark:border-[var(--border-color)] bg-paper/40 dark:bg-[var(--bg-tertiary)] dark:text-[var(--text-primary)] focus:ring-2 focus:ring-moss-400 focus:border-transparent outline-none transition mt-2 font-body"
-                />
+                <p className="text-xs text-ink/40 dark:text-[var(--text-muted)] mt-1 font-body">JPG, PNG, GIF veya WEBP (max 5MB)</p>
               </>
             )}
           </div>
