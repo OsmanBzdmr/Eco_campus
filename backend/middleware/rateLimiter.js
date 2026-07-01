@@ -4,7 +4,7 @@ const isTest = process.env.NODE_ENV === 'test';
 
 const generalLimiter = rateLimit({
   windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000,
-  max: isTest ? 0 : (parseInt(process.env.RATE_LIMIT_MAX) || 100),
+  max: isTest ? 0 : (parseInt(process.env.RATE_LIMIT_MAX) || 300),
   message: { message: 'Çok fazla istek gönderdiniz, lütfen daha sonra tekrar deneyin.' },
   standardHeaders: true,
   legacyHeaders: false,

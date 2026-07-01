@@ -92,7 +92,8 @@ export default function ProductForm({ token, editingProduct, onProductAdded, onC
 
       onProductAdded();
     } catch (error) {
-      setToast({ type: 'error', message: isEditing ? 'Güncelleme sırasında hata oluştu' : 'Ürün eklenirken hata oluştu' });
+      const msg = error.response?.data?.message || (isEditing ? 'Güncelleme sırasında hata oluştu' : 'Ürün eklenirken hata oluştu');
+      setToast({ type: 'error', message: msg });
       console.error(error);
     } finally {
       setLoading(false);

@@ -2,6 +2,7 @@ const express = require('express');
 const path = require('path');
 const cors = require('cors');
 const helmet = require('helmet');
+const multer = require('multer');
 require('dotenv').config({ path: path.join(__dirname, '.env') });
 
 if (!process.env.JWT_SECRET) {
@@ -58,7 +59,27 @@ app.use((err, req, res, _next) => {
   console.error('Hata yakalandı:', err);
 
   let statusCode = err.status || err.statusCode || 500;
-  if (err.code === 'LIMIT_FILE_SIZE') statusCode = 413;
+
+  // Multer hata kodları
+  if (err instanceof multer.MulterError) {
+    switch (err.code) {
+      case 'LIMIT_FILE_SIZE':
+        statusCode = 413;
+        err.message = 'Dosya boyutu çok büyük (maksimum 5MB)';
+        break;
+      case 'LIMIT_UNEXPECTED_FILE':
+        statusCode = 400;
+        err.message = 'Beklenmeyen dosya alanı: ' + err.field;
+        break;
+      case 'LIMIT_PART_COUNT':
+        statusCode = 400;
+        err.message = 'Çok fazla form alanı';
+        break;
+      default:
+        statusCode = 400;
+        break;
+    }
+  }
   if (err.message && err.message.includes('Yalnızca resim dosyaları')) statusCode = 415;
 
   const isDev = process.env.NODE_ENV !== 'production';

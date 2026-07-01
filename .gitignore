@@ -54,6 +54,10 @@ yarn-error.log*
 logs/
 *.log
 
+# Uploads — kullanıcı görselleri (git'e eklenmez)
+backend/uploads/*
+!backend/uploads/.gitkeep
+
 # Misc
 coverage/
 .nyc_output

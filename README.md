@@ -288,6 +288,10 @@ DATABASE_URL=postgresql://postgres:postgres@localhost:5432/ecocampus
 JWT_SECRET=guclu_ve_rastgele_bir_deger_buraya
 PORT=5000
 CORS_ORIGIN=http://localhost:5173,http://127.0.0.1:5173
+RATE_LIMIT_WINDOW_MS=900000
+RATE_LIMIT_MAX=300
+AUTH_RATE_LIMIT_WINDOW_MS=900000
+AUTH_RATE_LIMIT_MAX=10
 ```
 
 `JWT_SECRET` tanımlı değilse sunucu başlangıçta hata verip kapanır. Rastgele bir değer üretmek için kurulum adımındaki komutu kullanın. Projeye eklenen `.env` dosyası önceden oluşturulmuş güçlü bir rastgele değer içerir, production'da mutlaka kendiniz yenileyin.
