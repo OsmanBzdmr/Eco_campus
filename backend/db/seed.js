@@ -29,43 +29,43 @@ async function seedDemoData(db) {
 
   await db.query(
     'INSERT INTO products (title, price, description, image_url, user_id, category_id, status) VALUES ($1, $2, $3, $4, $5, $6, $7)',
-    ['Kullanılmış Laptop', 500, 'Dell laptop, çalışıyor', 'https://via.placeholder.com/300', userId, cats[1], 'active']
+    ['Kullanılmış Laptop', 500, 'Dell laptop, çalışıyor', 'https://placehold.co/300', userId, cats[1], 'active']
   );
   await db.query(
     'INSERT INTO products (title, price, description, image_url, user_id, category_id, status) VALUES ($1, $2, $3, $4, $5, $6, $7)',
-    ['Bağış: Fizik Ders Notları', 0, 'Bedava dağıtılıyor', 'https://via.placeholder.com/300', userId, cats[0], 'active']
+    ['Bağış: Fizik Ders Notları', 0, 'Bedava dağıtılıyor', 'https://placehold.co/300', userId, cats[0], 'active']
   );
   await db.query(
     'INSERT INTO products (title, price, description, image_url, user_id, category_id, status) VALUES ($1, $2, $3, $4, $5, $6, $7)',
-    ['USB Kablo', 25, 'Type-C kablo', 'https://via.placeholder.com/300', userId, cats[1], 'reserved']
+    ['USB Kablo', 25, 'Type-C kablo', 'https://placehold.co/300', userId, cats[1], 'reserved']
   );
   await db.query(
     'INSERT INTO products (title, price, description, image_url, user_id, category_id, status) VALUES ($1, $2, $3, $4, $5, $6, $7)',
-    ['İstatistik Kitabı', 60, 'Yeni gibi, 2. baskı', 'https://via.placeholder.com/300', userId, cats[0], 'active']
+    ['İstatistik Kitabı', 60, 'Yeni gibi, 2. baskı', 'https://placehold.co/300', userId, cats[0], 'active']
   );
   await db.query(
     'INSERT INTO products (title, price, description, image_url, user_id, category_id, status) VALUES ($1, $2, $3, $4, $5, $6, $7)',
-    ['Kamp Masası', 150, 'Hafif ve katlanabilir', 'https://via.placeholder.com/300', userId, cats[2], 'active']
+    ['Kamp Masası', 150, 'Hafif ve katlanabilir', 'https://placehold.co/300', userId, cats[2], 'active']
   );
   await db.query(
     'INSERT INTO products (title, price, description, image_url, user_id, category_id, status) VALUES ($1, $2, $3, $4, $5, $6, $7)',
-    ['iPhone Şarj Aleti', 0, 'İhtiyacı olana ücretsiz', 'https://via.placeholder.com/300', userId, cats[1], 'active']
+    ['iPhone Şarj Aleti', 0, 'İhtiyacı olana ücretsiz', 'https://placehold.co/300', userId, cats[1], 'active']
   );
   await db.query(
     'INSERT INTO products (title, price, description, image_url, user_id, category_id, status) VALUES ($1, $2, $3, $4, $5, $6, $7)',
-    ['Tükenmez Kalem Seti', 0, '5 adet renkli kalem', 'https://via.placeholder.com/300', userId, cats[0], 'active']
+    ['Tükenmez Kalem Seti', 0, '5 adet renkli kalem', 'https://placehold.co/300', userId, cats[0], 'active']
   );
   await db.query(
     'INSERT INTO products (title, price, description, image_url, user_id, category_id, status) VALUES ($1, $2, $3, $4, $5, $6, $7)',
-    ['Monitör', 800, '27 inç IPS panel', 'https://via.placeholder.com/300', userId, cats[1], 'active']
+    ['Monitör', 800, '27 inç IPS panel', 'https://placehold.co/300', userId, cats[1], 'active']
   );
   await db.query(
     'INSERT INTO products (title, price, description, image_url, user_id, category_id, status) VALUES ($1, $2, $3, $4, $5, $6, $7)',
-    ['Çalışma Masası', 200, 'Ayarlanabilir yükseklik', 'https://via.placeholder.com/300', userId, cats[2], 'sold']
+    ['Çalışma Masası', 200, 'Ayarlanabilir yükseklik', 'https://placehold.co/300', userId, cats[2], 'sold']
   );
   await db.query(
     'INSERT INTO products (title, price, description, image_url, user_id, category_id, status) VALUES ($1, $2, $3, $4, $5, $6, $7)',
-    ['C# Ders Notları', 45, 'I. dönem ders notları', 'https://via.placeholder.com/300', userId, cats[0], 'active']
+    ['C# Ders Notları', 45, 'I. dönem ders notları', 'https://placehold.co/300', userId, cats[0], 'active']
   );
 }
 
