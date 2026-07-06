@@ -58,6 +58,10 @@ logs/
 backend/uploads/*
 !backend/uploads/.gitkeep
 
+# AI Agent configuration (local to each developer)
+.opencode/
+AGENTS.md
+
 # Misc
 coverage/
 .nyc_output
