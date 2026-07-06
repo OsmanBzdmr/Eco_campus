@@ -5,8 +5,6 @@
 
 ---
 
-> **💡 AI Agent Desteği:** Proje, [OpenCode](https://opencode.ai) ile AI destekli geliştirme için yapılandırılmıştır. `AGENTS.md` ve `.opencode/` dizini (skill'ler, agent'lar, kişisel konfigürasyon) `.gitignore`'dadır ve depoya eklenmez. OpenCode kullanmak isteyen geliştiriciler, bu dosyaları kendi yerel ortamlarında oluşturabilir.
-
 ## ✨ Özellikler
 
 - 🔒 **Güvenli Kimlik Doğrulama** — Bcrypt şifre hash'leme + JWT oturum yönetimi, merkezi auth middleware
