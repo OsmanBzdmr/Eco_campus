@@ -1,132 +1,132 @@
-# 🌿 EcoCampus — Sürdürülebilir Kampüs Pazaryeri
+# 🌿 EcoCampus — Sustainable Campus Marketplace
 
-**EcoCampus**, üniversite öğrencilerinin kampüs içinde eşya paylaşmasını, israfı azaltmasını ve öğrenci ekonomisini desteklemesini sağlayan modern bir full-stack pazaryeri platformudur.
+**EcoCampus** is a modern full-stack marketplace platform that lets university students share items on campus, reduce waste, and support the student economy.
 > React · Node.js · PostgreSQL · JWT · Tailwind CSS · React Native (Expo)
 
 ---
 
-## ✨ Özellikler
+## ✨ Features
 
-- 🔒 **Güvenli Kimlik Doğrulama** — Bcrypt şifre hash'leme + JWT oturum yönetimi, merkezi auth middleware
-- 👤 **Kayıt ve Giriş** — Web üzerinden yeni hesap oluşturma (register) ve giriş yapma
-- 📱 **Çoklu Platform** — React web dashboard + React Native mobil uygulama
-- 🗂️ **Kategori Sistemi** — İlanlar kategorilere ayrılır, kategori seçimi ve etiket gösterimi
-- 💚 **Bağış Sistemi** — Fiyatı 0 olan ürünler otomatik bağış olarak işaretlenir
-- 🖼️ **Görsel Yükleme** — Dosya seçici ile resim yükleme (JPG/PNG/GIF/WEBP, max 5MB) veya URL girme
-- 🔍 **Arama, Filtreleme ve Sayfalama** — Metin arama, kategori filtresi, fiyat aralığı, durum filtresi, sıralama, sayfalama
-- 📄 **Ürün Detay Sayfası** — Web'de modal, mobil'de ayrı ekran; resim, kullanıcı, kategori, durum, açıklama
-- ❤️ **Favori Yönetimi** — Web ve mobilde kalp ikonuyla favori ekleme/çıkarma; ayrı Favorilerim sekmesi, anlık tazeleme
-- 🏷️ **Ürün Durumu** — Aktif / Rezerve / Satıldı badge'leri, web ve mobilde gösterim
-- 📊 **Dashboard Analitik** — Toplam ilan, satılık ürün ve bağış sayılarını anlık takip edin
-- ✏️ **İlan Düzenleme** — Web ve mobil üzerinden mevcut ilanlarınızı düzenleyin, durum değiştirin
-- 🗑️ **İlan Yönetimi** — Kendi ilanlarınızı oluşturun, düzenleyin ve silin (yetkisiz işlemler backend tarafından reddedilir)
-- 📱 **Tam Mobil Destek** — Expo ile giriş, kayıt, ilan ekleme/düzenleme/silme, galeriden görsel seçme, pull-to-refresh, profil sayfası, auth guard ve güvenli token yönetimi (expo-secure-store). Arama çubuğu (debounce), kategori/durum chip'leri, fiyat aralığı filtresi ve sonsuz kaydırma (infinite scroll) ile gelişmiş filtreleme
-- 🛡️ **Güvenlik Sertleştirmesi** — Helmet güvenlik header'ları, genel ve auth'a özel rate limiting (brute-force koruması), tüm girdiler için sunucu taraflı doğrulama, kısıtlı CORS
-- ✅ **Kapsamlı Testler** — Backend'de Jest + Supertest (53 test), Web'de Vitest + Testing Library (26 test), Mobile'da Jest + ts-jest (20 test) — toplam 99 test
-- 👤 **Profil Sayfası** — Kullanıcı bilgileri, üyelik tarihi, kendi ilanlarının listesi ve istatistikler (web + mobil)
-- 🗑️ **Hesap Silme** — Şifre doğrulamalı kalıcı hesap silme; kullanıcının tüm ilanları ve favorileri cascade ile silinir (web + mobil)
-- 🌙 **Dark Mode** — Sistem tercihine uyumlu, localStorage ile kalıcı, manuel toggle (sidebar ve auth sayfalarında)
-- 🎨 **Vintage Kağıt Teması** — Özel renk paleti (moss/clay/mustard), etiket bileşeni (tag), receipt-style auth kartları
-- ✨ **Animasyonlar** — Sayfa geçişlerinde fade-in/up, modal scale-in, toast slide-in, hover efektleri, loading skeleton
-- 📱 **Mobil Sidebar** — Hamburger menü ile slide-out drawer, mobil header
-- 🔤 **Custom Tipografi** — Archivo (başlık), IBM Plex Sans (gövde), IBM Plex Mono (kod) — Google Fonts
+- 🔒 **Secure Authentication** — Bcrypt password hashing + JWT session management, centralized auth middleware
+- 👤 **Register & Login** — Create a new account and sign in from the web
+- 📱 **Multi-Platform** — React web dashboard + React Native mobile app
+- 🗂️ **Category System** — Listings are organized into categories, with category selection and tag display
+- 💚 **Donation System** — Items priced at 0 are automatically marked as donations
+- 🖼️ **Image Upload** — Upload images via file picker (JPG/PNG/GIF/WEBP, max 5MB) or provide a URL
+- 🔍 **Search, Filtering & Pagination** — Text search, category filter, price range, status filter, sorting, pagination
+- 📄 **Product Detail Page** — Modal on web, dedicated screen on mobile; shows image, seller, category, status, description
+- ❤️ **Favorites Management** — Add/remove favorites via heart icon on web and mobile; dedicated Favorites tab with instant refresh
+- 🏷️ **Product Status** — Active / Reserved / Sold badges, shown on both web and mobile
+- 📊 **Dashboard Analytics** — Live tracking of total listings, items for sale, and donation counts
+- ✏️ **Listing Editing** — Edit your existing listings and change status, from web or mobile
+- 🗑️ **Listing Management** — Create, edit, and delete your own listings (unauthorized actions are rejected server-side)
+- 📱 **Full Mobile Support** — Login, registration, listing creation/editing/deletion, image selection from gallery, pull-to-refresh, profile page, auth guard, and secure token management (expo-secure-store), all via Expo. Advanced filtering with a debounced search bar, category/status chips, price range filter, and infinite scroll
+- 🛡️ **Security Hardening** — Helmet security headers, general and auth-specific rate limiting (brute-force protection), server-side validation on all inputs, restricted CORS
+- ✅ **Comprehensive Tests** — Jest + Supertest on the backend (53 tests), Vitest + Testing Library on web (26 tests), Jest + ts-jest on mobile (20 tests) — 99 tests in total
+- 👤 **Profile Page** — User info, membership date, list of own listings, and stats (web + mobile)
+- 🗑️ **Account Deletion** — Permanent account deletion with password verification; all of the user's listings and favorites are cascade-deleted (web + mobile)
+- 🌙 **Dark Mode** — Follows system preference, persisted via localStorage, manual toggle (on sidebar and auth pages)
+- 🎨 **Vintage Paper Theme** — Custom color palette (moss/clay/mustard), tag component, receipt-style auth cards
+- ✨ **Animations** — Fade-in/up page transitions, modal scale-in, toast slide-in, hover effects, loading skeletons
+- 📱 **Mobile Sidebar** — Slide-out drawer via hamburger menu, mobile header
+- 🔤 **Custom Typography** — Archivo (headings), IBM Plex Sans (body), IBM Plex Mono (code) — Google Fonts
 
 ---
 
-## 🛠️ Teknoloji Yığını
+## 🛠️ Tech Stack
 
-| Katman | Teknoloji |
+| Layer | Technology |
 |---|---|
 | Backend | Node.js, Express.js |
-| Veritabanı | PostgreSQL |
-| Güvenlik | JWT, Bcryptjs, Helmet, express-rate-limit, express-validator |
-| Test & Kalite | Jest, Supertest, Vitest, @testing-library/react, ts-jest, ESLint |
+| Database | PostgreSQL |
+| Security | JWT, Bcryptjs, Helmet, express-rate-limit, express-validator |
+| Testing & Quality | Jest, Supertest, Vitest, @testing-library/react, ts-jest, ESLint |
 | Web Frontend | React 19, Tailwind CSS v3, Axios, Lucide React, Vitest |
 | Web Fonts | Google Fonts — Archivo, IBM Plex Sans, IBM Plex Mono |
-| Mobil | React Native (Expo), jest, ts-jest, react-test-renderer |
+| Mobile | React Native (Expo), jest, ts-jest, react-test-renderer |
 | Build Tool | Vite |
-| Görsel Yükleme | Multer |
+| Image Upload | Multer |
 
 ---
 
-## 📁 Proje Yapısı
+## 📁 Project Structure
 
 ```
 Eco_campus/
 ├── backend/
-│   ├── config/db.js              # PostgreSQL bağlantısı (Pool)
+│   ├── config/db.js              # PostgreSQL connection (Pool)
 │   ├── controllers/
-│   │   ├── authController.js     # Kayıt, giriş, profil, hesap silme
-│   │   ├── productController.js  # Ürün CRUD + detay + filtreleme
-│   │   ├── categoryController.js # Kategori listeleme
-│   │   └── favoriteController.js # Favori toggle + listeleme
+│   │   ├── authController.js     # Register, login, profile, account deletion
+│   │   ├── productController.js  # Product CRUD + detail + filtering
+│   │   ├── categoryController.js # Category listing
+│   │   └── favoriteController.js # Favorite toggle + listing
 │   ├── db/
-│   │   ├── seed.js               # Demo veri (kullanıcı, kategori, ürün)
-│   │   └── schema.js             # Migration SQL'lerini okur
+│   │   ├── seed.js               # Demo data (user, category, product)
+│   │   └── schema.js             # Reads migration SQL files
 │   ├── migrations/
 │   │   ├── 001_create_users.sql
 │   │   ├── 002_create_categories.sql
 │   │   ├── 003_create_products.sql
-│   │   └── 004_add_product_status.sql  # status kolonu (active/sold/reserved)
+│   │   └── 004_add_product_status.sql  # status column (active/sold/reserved)
 │   ├── middleware/
-│   │   ├── authMiddleware.js           # JWT doğrulama (merkezi)
-│   │   ├── rateLimiter.js              # Genel + auth'a özel rate limiting
-│   │   └── validationMiddleware.js     # express-validator ile girdi doğrulama
+│   │   ├── authMiddleware.js           # JWT verification (centralized)
+│   │   ├── rateLimiter.js              # General + auth-specific rate limiting
+│   │   └── validationMiddleware.js     # Input validation via express-validator
 │   ├── routes/
 │   │   ├── authRoutes.js       # /api/auth/*
-│   │   ├── productRoutes.js    # /api/products/* (Multer upload dahil)
+│   │   ├── productRoutes.js    # /api/products/* (includes Multer upload)
 │   │   ├── categoryRoutes.js   # /api/categories
 │   │   └── favoriteRoutes.js   # /api/favorites/*
 │   ├── tests/
-│   │   ├── auth.test.js        # Auth testleri (16 test — register, login, profil, hesap silme)
-│   │   ├── products.test.js    # Ürün testleri (23 test)
-│   │   ├── categories.test.js  # Kategori testleri (4 test)
-│   │   ├── favorites.test.js   # Favori testleri (10 test)
-│   │   └── helpers/            # Mock DB, seed, auth yardımcıları
-│   ├── uploads/                # Yüklenen görseller (statik serve edilir)
-│   ├── server.js               # Express sunucu (helmet, CORS, rate limiter)
-│   ├── setup-db.js             # Migration + seed ile veritabanı kurulumu
+│   │   ├── auth.test.js        # Auth tests (16 tests — register, login, profile, account deletion)
+│   │   ├── products.test.js    # Product tests (23 tests)
+│   │   ├── categories.test.js  # Category tests (4 tests)
+│   │   ├── favorites.test.js   # Favorite tests (10 tests)
+│   │   └── helpers/            # Mock DB, seed, auth helpers
+│   ├── uploads/                # Uploaded images (served statically)
+│   ├── server.js               # Express server (helmet, CORS, rate limiter)
+│   ├── setup-db.js             # Database setup via migrations + seed
 │   ├── run-migrations.js       # Migration runner (_migrations tracking)
 │   └── .env.example
 ├── web/
 │   ├── src/
 │   │   ├── context/
-│   │   │   └── ThemeContext.jsx        # Dark/light tema yönetimi (Context + localStorage)
+│   │   │   └── ThemeContext.jsx        # Dark/light theme management (Context + localStorage)
 │   ├── components/
-│   │   │   ├── LoginPage.jsx          # Giriş formu (fiş tasarımı)
-│   │   │   ├── RegisterPage.jsx       # Kayıt formu (fiş tasarımı)
-│   │   │   ├── Dashboard.jsx          # Ana panel + arama/filtre/sayfalama + hamburger drawer
-│   │   │   ├── ProductForm.jsx        # İlan ekleme/düzenleme (file input + status)
-│   │   │   ├── ProductTable.jsx       # Tablo/kart görünümü + tag badge
-│   │   │   ├── ProductDetail.jsx      # Ürün detay modalı
-│   │   │   ├── StatsCard.jsx          # İstatistik kartları
-│   │   │   ├── ProfilePage.jsx        # Profil sayfası
-│   │   │   ├── Toast.jsx              # Bildirim bileşeni
-│   │   ├── __tests__/             # Component testleri (Vitest + Testing Library)
+│   │   │   ├── LoginPage.jsx          # Login form (receipt design)
+│   │   │   ├── RegisterPage.jsx       # Registration form (receipt design)
+│   │   │   ├── Dashboard.jsx          # Main panel + search/filter/pagination + hamburger drawer
+│   │   │   ├── ProductForm.jsx        # Add/edit listing (file input + status)
+│   │   │   ├── ProductTable.jsx       # Table/card view + tag badge
+│   │   │   ├── ProductDetail.jsx      # Product detail modal
+│   │   │   ├── StatsCard.jsx          # Stats cards
+│   │   │   ├── ProfilePage.jsx        # Profile page
+│   │   │   ├── Toast.jsx              # Notification component
+│   │   ├── __tests__/             # Component tests (Vitest + Testing Library)
 │   │   │   ├── ProductTable.test.jsx
 │   │   │   └── ProductDetail.test.jsx
 │   │   └── services/
-│   │       ├── api.js             # Axios API katmanı
+│   │       ├── api.js             # Axios API layer
 │   │       └── __tests__/
-│   │           └── api.test.js    # API servis testleri
+│   │           └── api.test.js    # API service tests
 │   ├── vitest.config.ts
 │   ├── test-setup.js
-│   └── vite.config.js                 # Proxy ile backend yönlendirmesi
+│   └── vite.config.js                 # Backend proxy configuration
 ├── mobile/
 │   ├── app/
 │   │   ├── _layout.tsx            # Stack navigator
-│   │   ├── login.tsx              # Giriş ekranı
-│   │   ├── register.tsx           # Kayıt ekranı
-│   │   ├── detail.tsx             # Ürün detay ekranı
-│   │   ├── edit-product.tsx       # İlan düzenleme (status + görsel)
+│   │   ├── login.tsx              # Login screen
+│   │   ├── register.tsx           # Registration screen
+│   │   ├── detail.tsx             # Product detail screen
+│   │   ├── edit-product.tsx       # Edit listing (status + image)
 │   │   ├── modal.tsx
 │   │   ├── (tabs)/
 │   │   │   ├── _layout.tsx        # Tab navigator
-│   │   │   ├── index.tsx          # İlan listesi + arama/filtre chip'leri + sonsuz kaydırma
-│   │   │   ├── favorites.tsx      # Favorilerim sekmesi (pull-to-refresh)
-│   │   │   ├── add-product.tsx    # İlan ekleme (galeriden görsel seç)
-│   │   │   └── profile.tsx        # Profil ekranı
-│   │   └── __tests__/             # Component testleri
+│   │   │   ├── index.tsx          # Listing feed + search/filter chips + infinite scroll
+│   │   │   ├── favorites.tsx      # Favorites tab (pull-to-refresh)
+│   │   │   ├── add-product.tsx    # Add listing (pick image from gallery)
+│   │   │   └── profile.tsx        # Profile screen
+│   │   └── __tests__/             # Component tests
 │   │   │   ├── index.test.tsx
 │   │   │   ├── detail.test.tsx
 │   │   │   └── favorites.test.tsx
@@ -135,41 +135,41 @@ Eco_campus/
 │   │   └── expo-constants.ts
 │   ├── services/
 │   │   ├── __tests__/
-│   │   │   └── api.test.ts       # API servis testleri (16 test)
-│   │   ├── api.ts                 # Axios API katmanı (FormData desteği)
-│   │   └── auth.ts                # Token yönetimi (expo-secure-store)
-│   ├── constants/theme.ts         # Eco renk paleti
+│   │   │   └── api.test.ts       # API service tests (16 tests)
+│   │   ├── api.ts                 # Axios API layer (FormData support)
+│   │   └── auth.ts                # Token management (expo-secure-store)
+│   ├── constants/theme.ts         # Eco color palette
 │   ├── jest.config.js
 │   ├── jest-setup.js
 │   ├── tsconfig.jest.json
 │   ├── babel.config.js
-│   └── metro.config.js                # Expo Router için gerekli Metro config
+│   └── metro.config.js                # Metro config required for Expo Router
 └── README.md
 ```
 
 ---
 
-## 🚀 Kurulum
+## 🚀 Setup
 
-### Gereksinimler
+### Requirements
 - Node.js 18+
 - npm
-- Docker (PostgreSQL için) veya lokal PostgreSQL kurulumu
+- Docker (for PostgreSQL) or a local PostgreSQL installation
 
-### 1. Repoyu klonla
+### 1. Clone the repo
 
 ```bash
 git clone https://github.com/OsmanBzdmr/Eco_campus
 cd Eco_campus
 ```
 
-### 2. PostgreSQL'i başlat (Docker)
+### 2. Start PostgreSQL (Docker)
 
 ```bash
 docker run -d --name ecocampus-db -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=ecocampus -p 5432:5432 postgres:16
 ```
 
-### 3. Veritabanını kur
+### 3. Set up the database
 
 ```bash
 cd backend
@@ -178,38 +178,38 @@ npm install
 node setup-db.js
 ```
 
-`setup-db.js` otomatik olarak veritabanını, tabloları ve test verilerini oluşturur.
+`setup-db.js` automatically creates the database, tables, and seed data.
 
-> ⚠️ **Önemli:** `.env` dosyasındaki `JWT_SECRET` zorunludur — boş veya eksik bırakılırsa sunucu güvenlik gereği başlamayı reddeder. Rastgele güçlü bir değer üretmek için:
+> ⚠️ **Important:** `JWT_SECRET` in the `.env` file is required — the server refuses to start for security reasons if it's empty or missing. To generate a strong random value:
 > ```bash
 > node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 > ```
-> Çıkan değeri `.env` içindeki `JWT_SECRET=` satırına yapıştırın.
+> Paste the resulting value into the `JWT_SECRET=` line in `.env`.
 
-**Test kullanıcısı:**
+**Test user:**
 - Email: `test@university.edu`
-- Şifre: `test123`
+- Password: `test123`
 
-### 4. Backend'i başlat
+### 4. Start the backend
 
 ```bash
 node server.js
 # http://localhost:5000
 ```
 
-> 🧪 **Testler (opsiyonel):** Üç platformda da yazılmış otomatik testleri çalıştırabilirsiniz:
+> 🧪 **Tests (optional):** You can run the automated tests written for all three platforms:
 > ```bash
-> # Backend (53 test — auth, products, categories, favorites)
+> # Backend (53 tests — auth, products, categories, favorites)
 > cd backend && npm test
 >
-> # Web (26 test — API servisleri, component render)
+> # Web (26 tests — API services, component rendering)
 > cd web && npm test
 >
-> # Mobile (20 test — API servisleri, component render)
+> # Mobile (20 tests — API services, component rendering)
 > cd mobile && npm test
 > ```
 
-### 5. Web dashboard'u başlat
+### 5. Start the web dashboard
 
 ```bash
 cd ../web
@@ -218,28 +218,28 @@ npm run dev
 # http://localhost:5173
 ```
 
-### 6. Mobil uygulamayı başlat
+### 6. Start the mobile app
 
 ```bash
 cd ../mobile
 npm install
 npx expo start
-# Expo Go uygulamasıyla QR kodu okutun
+# Scan the QR code with the Expo Go app
 ```
 
-> 📱 **Not:** Mobil uygulama login-first yaklaşımıyla açılır. Giriş sonrası ilanları görüntüleyebilir, filtreleyebilir, galeriden görsel seçerek ilan ekleyebilirsiniz.
+> 📱 **Note:** The mobile app opens with a login-first flow. After signing in, you can view listings, filter them, and add a listing by picking an image from the gallery.
 
-#### Mobil bağlantı sorunları
+#### Mobile connection issues
 
-Telefon ile bilgisayar aynı Wi-Fi ağında olduğu halde Expo Go'da bağlantı kurulamıyorsa (`failed to download remote update`, sonsuza kadar süren "yükleniyor" ekranları vb.), ağ büyük ihtimalle **AP/client isolation** uyguluyordur (okul, kampüs veya misafir ağlarında yaygındır). Bu durumda:
+If your phone and computer are on the same Wi-Fi network but Expo Go still can't connect (`failed to download remote update`, an endless "loading" screen, etc.), the network is most likely applying **AP/client isolation** (common on school, campus, or guest networks). In that case, use tunnel mode:
 
 ```bash
 npx expo start --tunnel
 ```
 
-ile tünel modunu kullanın. Tünel modunda backend'in de dışarıdan erişilebilir olması gerektiğinden, backend'i ayrıca `npx ngrok http 5000` ile açıp `mobile/services/api.ts` içindeki `getBaseUrl()` fonksiyonunu geçici olarak o adrese sabitlemeniz gerekebilir. Ev/ofis gibi izole olmayan ağlarda standart `npx expo start` (LAN modu) yeterlidir.
+Since tunnel mode requires the backend to be reachable from outside as well, you may need to expose the backend separately with `npx ngrok http 5000` and temporarily point the `getBaseUrl()` function in `mobile/services/api.ts` to that address. On non-isolated networks such as home or office, the standard `npx expo start` (LAN mode) is sufficient.
 
-Eğer `Cannot find module 'babel-preset-expo'` hatası alırsanız:
+If you get a `Cannot find module 'babel-preset-expo'` error:
 ```bash
 cd mobile
 npm install babel-preset-expo@~54.0.11
@@ -247,45 +247,45 @@ npm install babel-preset-expo@~54.0.11
 
 ---
 
-## 📡 API Endpoint'leri
+## 📡 API Endpoints
 
-| Metod | Endpoint | Açıklama | Auth |
+| Method | Endpoint | Description | Auth |
 |---|---|---|---|
-| POST | `/api/auth/register` | Yeni kullanıcı kaydı (rate limit'li) | — |
-| POST | `/api/auth/login` | Giriş yap, JWT döner (rate limit'li) | — |
-| GET | `/api/auth/me` | Giriş yapan kullanıcının profil + istatistik + ilanları | ✅ |
-| DELETE | `/api/auth/me` | Hesabı sil — şifre doğrulama gerekli; tüm ilanlar ve favoriler cascade ile silinir | ✅ |
-| GET | `/api/categories` | Kategorileri getir | — |
-| GET | `/api/products` | İlanları getir (filtreleme + sayfalama + sıralama) | — |
-| GET | `/api/products/:id` | Tek ürün detayı (username + category_name ile) | — |
-| POST | `/api/products` | Yeni ilan ekle (multipart/form-data ile görsel yükleme) | ✅ |
-| PUT | `/api/products/:id` | İlanı güncelle — kısmi güncelleme, status dahil | ✅ |
-| DELETE | `/api/products/:id` | İlan sil (sadece sahibi) | ✅ |
-| POST | `/api/favorites/:id` | Favori ekle/çıkar (toggle) | ✅ |
-| GET | `/api/favorites` | Favori listesini getir | ✅ |
+| POST | `/api/auth/register` | Register a new user (rate-limited) | — |
+| POST | `/api/auth/login` | Log in, returns a JWT (rate-limited) | — |
+| GET | `/api/auth/me` | Logged-in user's profile + stats + listings | ✅ |
+| DELETE | `/api/auth/me` | Delete account — requires password verification; all listings and favorites are cascade-deleted | ✅ |
+| GET | `/api/categories` | Get categories | — |
+| GET | `/api/products` | Get listings (filtering + pagination + sorting) | — |
+| GET | `/api/products/:id` | Single product detail (with username + category_name) | — |
+| POST | `/api/products` | Create a new listing (image upload via multipart/form-data) | ✅ |
+| PUT | `/api/products/:id` | Update a listing — partial update, including status | ✅ |
+| DELETE | `/api/products/:id` | Delete a listing (owner only) | ✅ |
+| POST | `/api/favorites/:id` | Toggle a favorite (add/remove) | ✅ |
+| GET | `/api/favorites` | Get the favorites list | ✅ |
 
-> **GET /api/products** parametreleri:
-> - `search` — başlık/açıklamada metin arama
-> - `category_id` — kategori filtresi
-> - `min_price` / `max_price` — fiyat aralığı
-> - `status` — durum filtresi (`active`, `sold`, `reserved`)
-> - `page` / `limit` — sayfalama (limit 1-100 arası)
-> - `sort` — sıralama (`id`, `title`, `price`, `created_at`)
-> - `order` — sıralama yönü (`asc`, `desc`)
+> **GET /api/products** parameters:
+> - `search` — text search on title/description
+> - `category_id` — category filter
+> - `min_price` / `max_price` — price range
+> - `status` — status filter (`active`, `sold`, `reserved`)
+> - `page` / `limit` — pagination (limit 1–100)
+> - `sort` — sort field (`id`, `title`, `price`, `created_at`)
+> - `order` — sort direction (`asc`, `desc`)
 >
-> Sayfalama aktifken `X-Total-Count`, `X-For-Sale-Count`, `X-Donation-Count`, `X-Page`, `X-Limit`, `X-Total-Pages` response header'larında döner.
+> When pagination is active, the `X-Total-Count`, `X-For-Sale-Count`, `X-Donation-Count`, `X-Page`, `X-Limit`, `X-Total-Pages` response headers are returned.
 
-> **POST/PUT /api/products:** `Content-Type: multipart/form-data` ile görsel dosyası (`image` alanı) gönderilebilir. Dosya gönderilmezse `image_url` alanı kullanılır.
+> **POST/PUT /api/products:** An image file (`image` field) can be sent with `Content-Type: multipart/form-data`. If no file is sent, the `image_url` field is used instead.
 
 ---
 
-## ⚙️ Ortam Değişkenleri
+## ⚙️ Environment Variables
 
-`backend/.env` dosyasını `.env.example` dosyasından oluşturun:
+Create `backend/.env` from `.env.example`:
 
 ```env
 DATABASE_URL=postgresql://postgres:postgres@localhost:5432/ecocampus
-JWT_SECRET=guclu_ve_rastgele_bir_deger_buraya
+JWT_SECRET=your_strong_random_value_here
 PORT=5000
 CORS_ORIGIN=http://localhost:5173,http://127.0.0.1:5173
 RATE_LIMIT_WINDOW_MS=900000
@@ -294,10 +294,10 @@ AUTH_RATE_LIMIT_WINDOW_MS=900000
 AUTH_RATE_LIMIT_MAX=10
 ```
 
-`JWT_SECRET` tanımlı değilse sunucu başlangıçta hata verip kapanır. Rastgele bir değer üretmek için kurulum adımındaki komutu kullanın. Projeye eklenen `.env` dosyası önceden oluşturulmuş güçlü bir rastgele değer içerir, production'da mutlaka kendiniz yenileyin.
+If `JWT_SECRET` is not set, the server errors out and shuts down on startup. Use the command from the setup step to generate a random value. The `.env` file included with the project ships with a pre-generated strong random value — make sure to regenerate your own for production.
 
-> **Web için:** Vite proxy kullanılır (`vite.config.js` → `server.proxy`). `/api/*` istekleri otomatik olarak `http://localhost:5000`'e yönlendirilir.
+> **For the web app:** A Vite proxy is used (`vite.config.js` → `server.proxy`). `/api/*` requests are automatically forwarded to `http://localhost:5000`.
 
-## 📝 Lisans
+## 📝 License
 
-MIT License — özgürce kullanabilirsiniz.
+MIT License — free to use.
